@@ -341,31 +341,23 @@ export const adminRevenueBreakdown = createServerFn({ method: "GET" })
     const since = new Date(Date.now() - data.days * 86_400_000).toISOString();
     const { data: rows, error } = await context.supabase
       .from("orders")
-      .select("total,payment_status,payment_method,status")
+      .select("total,payment_status,status")
       .gte("created_at", since);
     if (error) throw error;
 
     const byStatus = new Map<string, { status: string; orders: number; amount: number }>();
-    const byMethod = new Map<string, { method: string; orders: number; amount: number }>();
     for (const o of rows ?? []) {
       const status = o.payment_status ?? "unknown";
       const s = byStatus.get(status) ?? { status, orders: 0, amount: 0 };
       s.orders += 1;
       s.amount += o.total ?? 0;
       byStatus.set(status, s);
-
-      const method = (o as { payment_method?: string | null }).payment_method ?? "unspecified";
-      const m = byMethod.get(method) ?? { method, orders: 0, amount: 0 };
-      m.orders += 1;
-      m.amount += o.total ?? 0;
-      byMethod.set(method, m);
     }
 
     const list = [...byStatus.values()].sort((a, b) => b.amount - a.amount);
     return {
       days: data.days,
       byStatus: list,
-      byMethod: [...byMethod.values()].sort((a, b) => b.amount - a.amount),
       collected: list.find((s) => s.status === "paid")?.amount ?? 0,
       pending: list.filter((s) => s.status !== "paid" && s.status !== "refunded" && s.status !== "failed").reduce((n, s) => n + s.amount, 0),
       refunded: list.find((s) => s.status === "refunded")?.amount ?? 0,
