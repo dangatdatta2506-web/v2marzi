@@ -145,7 +145,9 @@ function ProductPage() {
   const [size, setSize] = useState<string | null>(null);
 
   useEffect(() => {
-    if (product) track("product_view", { productSlug: product.slug, productName: product.name });
+    if (!product) return;
+    track("product_view", { productSlug: product.slug, productName: product.name });
+    pushRecentlyViewed(product.slug);
   }, [product?.slug, product?.name]);
 
   if (!product) throw notFound();
