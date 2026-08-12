@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Minus, Plus, X } from "lucide-react";
+import { Gift, Minus, Plus, Truck, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { collectionImage } from "@/lib/images";
@@ -37,6 +37,8 @@ declare global {
   }
 }
 
+const FREE_SHIPPING = 1999;
+
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
     if (window.Razorpay) return resolve(true);
@@ -57,6 +59,8 @@ function CartPage() {
   const [coupon, setCoupon] = useState<{ code: string; percent: number } | null>(null);
   const [selected, setSelected] = useState<Address | null>(null);
   const [busy, setBusy] = useState(false);
+  const [giftWrap, setGiftWrap] = useState(false);
+  const [giftNote, setGiftNote] = useState("");
 
   const discount = coupon ? Math.round((subtotal * coupon.percent) / 100) : 0;
   const shipping = subtotal === 0 || subtotal > 1999 ? 0 : 149;
