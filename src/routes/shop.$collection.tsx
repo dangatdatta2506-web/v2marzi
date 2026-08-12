@@ -140,6 +140,49 @@ function CollectionPage() {
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <label htmlFor="band" className="sr-only">
+          Filter by price
+        </label>
+        <select
+          id="band"
+          value={band}
+          onChange={(e) => setBand(e.target.value)}
+          className="h-10 border border-border bg-background px-3 text-sm normal-case tracking-normal outline-none focus:border-gold"
+        >
+          {priceBands.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.label}
+            </option>
+          ))}
+        </select>
+        <label htmlFor="material" className="sr-only">
+          Filter by material
+        </label>
+        <select
+          id="material"
+          value={material}
+          onChange={(e) => setMaterial(e.target.value)}
+          className="h-10 max-w-56 border border-border bg-background px-3 text-sm normal-case tracking-normal outline-none focus:border-gold"
+        >
+          {materials.map((m) => (
+            <option key={m} value={m}>
+              {m === "All" ? "All materials" : m}
+            </option>
+          ))}
+        </select>
+        <label className="flex cursor-pointer items-center gap-2">
+          <input
+            type="checkbox"
+            checked={onlyOffers}
+            onChange={(e) => setOnlyOffers(e.target.checked)}
+            className="size-4 accent-[hsl(var(--gold))]"
+          />
+          On offer only
+        </label>
+        <span className="ml-auto">{list.length} pieces</span>
+      </div>
+
       {list.length ? (
         <div className="mt-12 grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => (
@@ -151,6 +194,24 @@ function CollectionPage() {
           Nothing matches that filter yet.
         </p>
       )}
+
+      <section className="mt-24 grid gap-6 md:grid-cols-3">
+        <Link to="/gifting" className="border border-border p-8 transition-colors hover:border-gold">
+          <p className="font-display text-2xl">Gifting</p>
+          <p className="mt-3 text-sm text-muted-foreground">Shop by budget and occasion.</p>
+        </Link>
+        <Link to="/best-sellers" className="border border-border p-8 transition-colors hover:border-gold">
+          <p className="font-display text-2xl">Best sellers</p>
+          <p className="mt-3 text-sm text-muted-foreground">The pieces everyone reorders.</p>
+        </Link>
+        <Link to="/new-arrivals" className="border border-border p-8 transition-colors hover:border-gold">
+          <p className="font-display text-2xl">New arrivals</p>
+          <p className="mt-3 text-sm text-muted-foreground">Just landed in the edit.</p>
+        </Link>
+      </section>
+
+      <RecentlyViewed />
     </div>
+
   );
 }
