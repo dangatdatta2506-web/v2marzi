@@ -211,11 +211,13 @@ export type Database = {
           description: string
           id: string
           image_url: string | null
+          images: string[]
           material: string
           name: string
           price: number
           rating: number
           reviews: number
+          sizes: string[]
           slug: string
           specs: Json
           stock: number
@@ -231,11 +233,13 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          images?: string[]
           material?: string
           name: string
           price?: number
           rating?: number
           reviews?: number
+          sizes?: string[]
           slug: string
           specs?: Json
           stock?: number
@@ -251,11 +255,13 @@ export type Database = {
           description?: string
           id?: string
           image_url?: string | null
+          images?: string[]
           material?: string
           name?: string
           price?: number
           rating?: number
           reviews?: number
+          sizes?: string[]
           slug?: string
           specs?: Json
           stock?: number
@@ -286,6 +292,39 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      serviceable_pincodes: {
+        Row: {
+          active: boolean
+          city: string
+          created_at: string
+          eta_days: number
+          id: string
+          pincode: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          city?: string
+          created_at?: string
+          eta_days?: number
+          id?: string
+          pincode: string
+          state?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          city?: string
+          created_at?: string
+          eta_days?: number
+          id?: string
+          pincode?: string
+          state?: string
           updated_at?: string
         }
         Relationships: []
