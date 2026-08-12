@@ -14,6 +14,126 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          city: string
+          created_at: string
+          full_name: string
+          id: string
+          is_default: boolean
+          label: string
+          line1: string
+          line2: string | null
+          phone: string
+          pincode: string
+          state: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          full_name: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          line1: string
+          line2?: string | null
+          phone: string
+          pincode: string
+          state: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          full_name?: string
+          id?: string
+          is_default?: boolean
+          label?: string
+          line1?: string
+          line2?: string | null
+          phone?: string
+          pincode?: string
+          state?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      admin_2fa_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          user_id: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          user_id: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          user_id?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
+      deals: {
+        Row: {
+          active: boolean
+          code: string | null
+          created_at: string
+          cta_href: string | null
+          cta_label: string | null
+          description: string
+          discount_percent: number
+          ends_at: string | null
+          id: string
+          is_popup: boolean
+          starts_at: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          cta_href?: string | null
+          cta_label?: string | null
+          description?: string
+          discount_percent?: number
+          ends_at?: string | null
+          id?: string
+          is_popup?: boolean
+          starts_at?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string | null
+          created_at?: string
+          cta_href?: string | null
+          cta_label?: string | null
+          description?: string
+          discount_percent?: number
+          ends_at?: string | null
+          id?: string
+          is_popup?: boolean
+          starts_at?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       orders: {
         Row: {
           coupon: string | null
@@ -77,6 +197,69 @@ export type Database = {
           total?: number
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          active: boolean
+          badge: string | null
+          category: string
+          collection: string
+          compare_at: number | null
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          material: string
+          name: string
+          price: number
+          rating: number
+          reviews: number
+          slug: string
+          specs: Json
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          badge?: string | null
+          category?: string
+          collection?: string
+          compare_at?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          material?: string
+          name: string
+          price?: number
+          rating?: number
+          reviews?: number
+          slug: string
+          specs?: Json
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          badge?: string | null
+          category?: string
+          collection?: string
+          compare_at?: number | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          material?: string
+          name?: string
+          price?: number
+          rating?: number
+          reviews?: number
+          slug?: string
+          specs?: Json
+          stock?: number
+          updated_at?: string
         }
         Relationships: []
       }
