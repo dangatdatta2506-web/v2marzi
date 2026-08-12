@@ -290,6 +290,48 @@ export type Database = {
         }
         Relationships: []
       }
+      site_events: {
+        Row: {
+          created_at: string
+          device: string | null
+          event_type: string
+          id: string
+          path: string | null
+          product_name: string | null
+          product_slug: string | null
+          referrer: string | null
+          user_id: string | null
+          value: number
+          visitor_id: string
+        }
+        Insert: {
+          created_at?: string
+          device?: string | null
+          event_type: string
+          id?: string
+          path?: string | null
+          product_name?: string | null
+          product_slug?: string | null
+          referrer?: string | null
+          user_id?: string | null
+          value?: number
+          visitor_id: string
+        }
+        Update: {
+          created_at?: string
+          device?: string | null
+          event_type?: string
+          id?: string
+          path?: string | null
+          product_name?: string | null
+          product_slug?: string | null
+          referrer?: string | null
+          user_id?: string | null
+          value?: number
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
