@@ -155,6 +155,10 @@ function InsightsPanel() {
     queryKey: ["admin-analytics", days],
     queryFn: () => adminAnalytics({ data: { days } }),
   });
+  const revenue = useQuery({
+    queryKey: ["admin-revenue", days],
+    queryFn: () => adminRevenueBreakdown({ data: { days } }),
+  });
 
   if (isLoading || !data) return <p className="mt-10 text-sm text-muted-foreground">Loading insights…</p>;
 
@@ -244,6 +248,69 @@ function InsightsPanel() {
         <InsightStat label="Conversion" value={`${t.conversionRate}%`} hint="visitors who purchased" />
         <InsightStat label="Avg order" value={inr(t.avgOrderValue)} hint={`${t.addToCart} add-to-bag events`} />
       </div>
+
+      <section className="mt-12">
+        <h2 className="font-display text-2xl">Revenue by payment status</h2>
+        {!revenue.data ? (
+          <p className="mt-3 text-sm text-muted-foreground">Loading payment detail…</p>
+        ) : (
+          <>
+            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <InsightStat label="Collected" value={inr(revenue.data.collected)} hint="payments marked paid" />
+              <InsightStat label="Awaiting payment" value={inr(revenue.data.pending)} hint="pending or unpaid orders" />
+              <InsightStat label="Refunded" value={inr(revenue.data.refunded)} />
+              <InsightStat label="Failed" value={inr(revenue.data.failed)} />
+            </div>
+            <div className="mt-6 overflow-x-auto border border-border">
+              <table className="w-full min-w-[520px] text-left text-sm">
+                <thead className="bg-secondary/60">
+                  <tr className="text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+                    <th className="px-4 py-3">Payment status</th>
+                    <th className="px-4 py-3">Orders</th>
+                    <th className="px-4 py-3">Value</th>
+                    <th className="px-4 py-3">Share of value</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {revenue.data.byStatus.length === 0 && (
+                    <tr>
+                      <td colSpan={4} className="px-4 py-6 text-muted-foreground">
+                        No orders in this period.
+                      </td>
+                    </tr>
+                  )}
+                  {revenue.data.byStatus.map((s) => {
+                    const total = revenue.data.byStatus.reduce((n, r) => n + r.amount, 0) || 1;
+                    return (
+                      <tr key={s.status}>
+                        <td className="px-4 py-3 uppercase tracking-[0.14em] text-xs">{s.status}</td>
+                        <td className="px-4 py-3">{s.orders}</td>
+                        <td className="px-4 py-3">{inr(s.amount)}</td>
+                        <td className="px-4 py-3">{Math.round((s.amount / total) * 100)}%</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <button
+              onClick={() =>
+                downloadCsv(
+                  `marzi-payments-${days}d.csv`,
+                  revenue.data!.byStatus.map((s) => ({
+                    payment_status: s.status,
+                    orders: s.orders,
+                    value_inr: s.amount,
+                  })),
+                )
+              }
+              className="mt-4 border border-foreground px-4 py-2 text-[0.7rem] uppercase tracking-[0.18em]"
+            >
+              Export payments CSV
+            </button>
+          </>
+        )}
+      </section>
 
       <div className="mt-10 grid gap-10 lg:grid-cols-2">
         <section>
