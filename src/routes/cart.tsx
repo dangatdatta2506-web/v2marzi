@@ -268,6 +268,57 @@ function CartPage() {
               </button>
             </form>
 
+            {(deals ?? []).some((d) => d.code) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(deals ?? [])
+                  .filter((d) => d.code)
+                  .slice(0, 3)
+                  .map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => {
+                        setCode(d.code!);
+                        setCoupon({ code: d.code!, percent: d.discountPercent });
+                        toast.success(`Coupon applied — ${d.discountPercent}% off`);
+                      }}
+                      className="border border-dashed border-gold px-3 py-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-gold"
+                    >
+                      {d.code} · {d.discountPercent}% off
+                    </button>
+                  ))}
+              </div>
+            )}
+
+            <div className="mt-6 border border-border bg-background p-4">
+              <label className="flex cursor-pointer items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={giftWrap}
+                  onChange={(e) => setGiftWrap(e.target.checked)}
+                  className="size-4 accent-gold"
+                />
+                <Gift className="size-4 text-gold" /> Send as a gift (free gift box, no prices on the
+                invoice)
+              </label>
+              {giftWrap && (
+                <>
+                  <label className="sr-only" htmlFor="gift-note">
+                    Gift message
+                  </label>
+                  <textarea
+                    id="gift-note"
+                    value={giftNote}
+                    onChange={(e) => setGiftNote(e.target.value.slice(0, 200))}
+                    rows={2}
+                    placeholder="Add a short gift message (optional)"
+                    className="mt-3 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                </>
+              )}
+            </div>
+
+
+
             <dl className="mt-8 space-y-3 text-sm">
               <Row label="Subtotal" value={inr(subtotal)} />
               {discount > 0 && <Row label="Discount" value={`− ${inr(discount)}`} />}
