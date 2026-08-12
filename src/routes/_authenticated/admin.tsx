@@ -519,19 +519,150 @@ const emptyProduct = {
   description: "",
   stock: 0,
   imageUrl: "",
+  sizes: "",
   active: true,
 };
+
+type ProductSort = "newest" | "most-clicked" | "most-sold" | "least-sold";
+
+const sortLabels: Record<ProductSort, string> = {
+  newest: "Newest first",
+  "most-clicked": "Most clicked",
+  "most-sold": "Most sold",
+  "least-sold": "Least sold",
+};
+
+function ProductImageUploader({
+  slug,
+  keys,
+  onChange,
+}: {
+  slug: string;
+  keys: string[];
+  onChange: (keys: string[]) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [previews, setPreviews] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    const missing = keys.filter((k) => !previews[k] && !/^https?:\/\//i.test(k));
+    if (missing.length === 0) return;
+    void (async () => {
+      const { data } = await supabase.storage
+        .from("product-images")
+        .createSignedUrls(missing, 3600);
+      if (cancelled || !data) return;
+      setPreviews((prev) => {
+        const next = { ...prev };
+        for (const entry of data) {
+          if (entry.path && entry.signedUrl) next[entry.path] = entry.signedUrl;
+        }
+        return next;
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [keys, previews]);
+
+  const upload = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    setBusy(true);
+    try {
+      const uploaded: string[] = [];
+      for (const file of Array.from(files).slice(0, 6 - keys.length)) {
+        const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+        const path = `${slug.trim().toLowerCase() || "unsorted"}/${crypto.randomUUID()}.${ext}`;
+        const { error } = await supabase.storage
+          .from("product-images")
+          .upload(path, file, { cacheControl: "3600", upsert: false });
+        if (error) throw error;
+        uploaded.push(path);
+      }
+      onChange([...keys, ...uploaded]);
+      toast.success(`${uploaded.length} image${uploaded.length === 1 ? "" : "s"} uploaded`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="sm:col-span-3">
+      <label htmlFor="p-images" className="eyebrow block">
+        Product photos (up to 6)
+      </label>
+      <input
+        id="p-images"
+        type="file"
+        accept="image/*"
+        multiple
+        disabled={busy || keys.length >= 6}
+        onChange={(e) => {
+          void upload(e.target.files);
+          e.target.value = "";
+        }}
+        className="mt-2 block w-full border border-border bg-background px-3 py-2.5 text-sm file:mr-4 file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs"
+      />
+      <p className="mt-1 text-xs text-muted-foreground">
+        {busy ? "Uploading…" : "The first photo is used as the main product image."}
+      </p>
+      {keys.length > 0 && (
+        <ul className="mt-3 flex flex-wrap gap-3">
+          {keys.map((key, index) => (
+            <li key={key} className="relative w-24">
+              <img
+                src={previews[key] ?? key}
+                alt={`Product photo ${index + 1}`}
+                className="h-24 w-24 object-cover"
+              />
+              <button
+                type="button"
+                onClick={() => onChange(keys.filter((k) => k !== key))}
+                className="mt-1 w-full border border-border py-1 text-[0.6rem] uppercase tracking-[0.12em] text-destructive"
+              >
+                Remove
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 function ProductsPanel() {
   const qc = useQueryClient();
   const [form, setForm] = useState(emptyProduct);
+  const [imageKeys, setImageKeys] = useState<string[]>([]);
+  const [sortBy, setSortBy] = useState<ProductSort>("newest");
   const { data, isLoading } = useQuery({
     queryKey: ["admin-products"],
     queryFn: () => adminListProducts(),
   });
+  const perf = useQuery({
+    queryKey: ["admin-product-performance"],
+    queryFn: () => adminProductPerformance(),
+  });
+
+  const stats = new Map((perf.data ?? []).map((p) => [p.slug, p]));
+  const statFor = (slug: string) =>
+    stats.get(slug) ?? { slug, clicks: 0, views: 0, unitsSold: 0, revenue: 0 };
+
+  const rows = [...(data ?? [])];
+  if (sortBy === "most-clicked") {
+    rows.sort((a, b) => statFor(b.slug).clicks - statFor(a.slug).clicks);
+  } else if (sortBy === "most-sold") {
+    rows.sort((a, b) => statFor(b.slug).unitsSold - statFor(a.slug).unitsSold);
+  } else if (sortBy === "least-sold") {
+    rows.sort((a, b) => statFor(a.slug).unitsSold - statFor(b.slug).unitsSold);
+  }
 
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ["admin-products"] });
+    void qc.invalidateQueries({ queryKey: ["admin-product-performance"] });
     void qc.invalidateQueries({ queryKey: ["catalog", "products"] });
   };
 
@@ -549,13 +680,19 @@ function ProductsPanel() {
           material: form.material,
           description: form.description,
           stock: Number(form.stock),
-          imageUrl: form.imageUrl ? form.imageUrl : null,
+          imageUrl: imageKeys[0] ?? (form.imageUrl ? form.imageUrl : null),
+          images: imageKeys,
+          sizes: form.sizes
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean),
           active: form.active,
         },
       }),
     onSuccess: () => {
       toast.success("Product saved");
       setForm(emptyProduct);
+      setImageKeys([]);
       invalidate();
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save product"),
@@ -638,9 +775,10 @@ function ProductsPanel() {
               <option value="Best Seller">Best Seller</option>
             </select>
           </div>
-          {input("imageUrl", "Image URL")}
+          {input("sizes", "Sizes (comma separated, e.g. S, M, L)")}
           {input("material", "Material")}
           {input("description", "Description")}
+          <ProductImageUploader slug={form.slug} keys={imageKeys} onChange={setImageKeys} />
         </div>
         <button
           onClick={() => save.mutate()}
@@ -653,26 +791,51 @@ function ProductsPanel() {
 
       {isLoading && <p className="mt-8 text-sm text-muted-foreground">Loading products…</p>}
 
-      <div className="mt-10 overflow-x-auto border border-border">
-        <table className="w-full min-w-[760px] text-left text-sm">
+      <div className="mt-10 flex flex-wrap items-center gap-3">
+        <label htmlFor="product-sort" className="eyebrow">
+          Sort by
+        </label>
+        <select
+          id="product-sort"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as ProductSort)}
+          className="h-11 border border-border bg-background px-3 text-sm"
+        >
+          {(Object.keys(sortLabels) as ProductSort[]).map((key) => (
+            <option key={key} value={key}>
+              {sortLabels[key]}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-4 overflow-x-auto border border-border">
+        <table className="w-full min-w-[880px] text-left text-sm">
           <thead className="bg-secondary/60">
             <tr className="text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
               <th className="px-4 py-3">Product</th>
               <th className="px-4 py-3">Collection</th>
               <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3">Clicks</th>
+              <th className="px-4 py-3">Sold</th>
               <th className="px-4 py-3">Stock</th>
               <th className="px-4 py-3" />
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {(data ?? []).map((p) => (
+            {rows.map((p) => (
               <tr key={p.slug}>
                 <td className="px-4 py-3">
                   <p>{p.name}</p>
                   <p className="text-xs text-muted-foreground">{p.slug}</p>
+                  {p.sizes.length > 0 && (
+                    <p className="text-xs text-muted-foreground">Sizes: {p.sizes.join(", ")}</p>
+                  )}
                 </td>
                 <td className="px-4 py-3 text-xs uppercase tracking-[0.14em]">{p.collection}</td>
                 <td className="px-4 py-3">{inr(p.price)}</td>
+                <td className="px-4 py-3">{statFor(p.slug).clicks}</td>
+                <td className="px-4 py-3">{statFor(p.slug).unitsSold}</td>
                 <td className="px-4 py-3">
                   <label className="sr-only" htmlFor={`stock-${p.slug}`}>
                     Stock for {p.name}
@@ -689,7 +852,7 @@ function ProductsPanel() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <button
-                    onClick={() =>
+                    onClick={() => {
                       setForm({
                         slug: p.slug,
                         name: p.name,
@@ -702,9 +865,12 @@ function ProductsPanel() {
                         description: p.description,
                         stock: p.stock,
                         imageUrl: p.imageUrl ?? "",
+                        sizes: (p.sizes ?? []).join(", "),
                         active: p.active,
-                      })
-                    }
+                      });
+                      setImageKeys(p.imageKeys ?? []);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
                     className="mr-3 text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
                   >
                     Edit
@@ -724,6 +890,188 @@ function ProductsPanel() {
     </div>
   );
 }
+
+const emptyPincode = { pincode: "", city: "", state: "", etaDays: 4, active: true };
+
+function PincodesPanel() {
+  const qc = useQueryClient();
+  const [form, setForm] = useState(emptyPincode);
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-pincodes"],
+    queryFn: () => adminListPincodes(),
+  });
+
+  const invalidate = () => void qc.invalidateQueries({ queryKey: ["admin-pincodes"] });
+
+  const save = useMutation({
+    mutationFn: () =>
+      adminSavePincode({
+        data: {
+          pincode: form.pincode.trim(),
+          city: form.city,
+          state: form.state,
+          etaDays: Number(form.etaDays) || 4,
+          active: form.active,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("PIN code saved");
+      setForm(emptyPincode);
+      invalidate();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save PIN code"),
+  });
+
+  const remove = useMutation({
+    mutationFn: (pincode: string) => adminDeletePincode({ data: { pincode } }),
+    onSuccess: () => {
+      toast.success("PIN code removed");
+      invalidate();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not remove PIN code"),
+  });
+
+  const list = data ?? [];
+
+  return (
+    <div className="mt-10">
+      <div className="border border-border p-6">
+        <h2 className="font-display text-3xl">Delivery PIN codes</h2>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Shoppers check these on the header and product pages. Saving an existing PIN updates it.
+        </p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-4">
+          <div>
+            <label htmlFor="pin-code" className="eyebrow block">
+              PIN code
+            </label>
+            <input
+              id="pin-code"
+              inputMode="numeric"
+              maxLength={6}
+              value={form.pincode}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, pincode: e.target.value.replace(/\D/g, "") }))
+              }
+              className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+            />
+          </div>
+          <div>
+            <label htmlFor="pin-city" className="eyebrow block">
+              City
+            </label>
+            <input
+              id="pin-city"
+              value={form.city}
+              onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
+              className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+            />
+          </div>
+          <div>
+            <label htmlFor="pin-state" className="eyebrow block">
+              State
+            </label>
+            <input
+              id="pin-state"
+              value={form.state}
+              onChange={(e) => setForm((f) => ({ ...f, state: e.target.value }))}
+              className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+            />
+          </div>
+          <div>
+            <label htmlFor="pin-eta" className="eyebrow block">
+              Delivery in (days)
+            </label>
+            <input
+              id="pin-eta"
+              type="number"
+              min={1}
+              max={30}
+              value={form.etaDays}
+              onChange={(e) => setForm((f) => ({ ...f, etaDays: Number(e.target.value) }))}
+              className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+            />
+          </div>
+        </div>
+        <label className="mt-4 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.active}
+            onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
+          />
+          Currently serviceable
+        </label>
+        <button
+          onClick={() => save.mutate()}
+          disabled={save.isPending || form.pincode.length !== 6}
+          className="mt-6 bg-gold px-8 py-4 text-[0.7rem] uppercase tracking-[0.2em] text-gold-foreground disabled:opacity-60"
+        >
+          {save.isPending ? "Saving…" : "Save PIN code"}
+        </button>
+      </div>
+
+      {isLoading && <p className="mt-8 text-sm text-muted-foreground">Loading PIN codes…</p>}
+
+      <div className="mt-10 overflow-x-auto border border-border">
+        <table className="w-full min-w-[640px] text-left text-sm">
+          <thead className="bg-secondary/60">
+            <tr className="text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+              <th className="px-4 py-3">PIN</th>
+              <th className="px-4 py-3">City</th>
+              <th className="px-4 py-3">State</th>
+              <th className="px-4 py-3">Delivery</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3" />
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {list.length === 0 && !isLoading && (
+              <tr>
+                <td colSpan={6} className="px-4 py-6 text-muted-foreground">
+                  No PIN codes added yet.
+                </td>
+              </tr>
+            )}
+            {list.map((p) => (
+              <tr key={p.pincode}>
+                <td className="px-4 py-3">{p.pincode}</td>
+                <td className="px-4 py-3">{p.city}</td>
+                <td className="px-4 py-3">{p.state}</td>
+                <td className="px-4 py-3">{p.eta_days} days</td>
+                <td className="px-4 py-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  {p.active ? "serviceable" : "paused"}
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <button
+                    onClick={() =>
+                      setForm({
+                        pincode: p.pincode,
+                        city: p.city ?? "",
+                        state: p.state ?? "",
+                        etaDays: p.eta_days,
+                        active: p.active,
+                      })
+                    }
+                    className="mr-3 text-[0.62rem] uppercase tracking-[0.14em] text-muted-foreground hover:text-foreground"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => remove.mutate(p.pincode)}
+                    className="text-[0.62rem] uppercase tracking-[0.14em] text-destructive"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 
 const emptyDeal = {
   title: "",
