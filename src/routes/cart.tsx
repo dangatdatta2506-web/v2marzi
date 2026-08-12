@@ -216,6 +216,27 @@ function CartPage() {
           <aside className="h-fit border border-border bg-card p-8">
             <h2 className="font-display text-3xl">Order summary</h2>
 
+            <div className="mt-6 border border-border bg-background p-4">
+              {subtotal >= FREE_SHIPPING ? (
+                <p className="flex items-center gap-2 text-xs text-gold">
+                  <Truck className="size-4" /> Free shipping unlocked
+                </p>
+              ) : (
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Truck className="size-4 text-gold" /> Add {inr(FREE_SHIPPING - subtotal)} more for
+                  free shipping
+                </p>
+              )}
+              <span className="mt-3 block h-1.5 bg-secondary">
+                <span
+                  className="block h-full bg-gold transition-all"
+                  style={{ width: `${Math.min(100, Math.round((subtotal / FREE_SHIPPING) * 100))}%` }}
+                />
+              </span>
+            </div>
+
+
+
             <form
               className="mt-6 flex"
               onSubmit={(e) => {
