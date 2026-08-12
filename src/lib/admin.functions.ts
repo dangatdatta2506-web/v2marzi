@@ -279,3 +279,96 @@ export const adminDeleteDeal = createServerFn({ method: "POST" })
     if (error) throw error;
     return { ok: true };
   });
+
+/* ------------ product performance (clicks / units sold) ------------ */
+
+export type ProductPerformance = {
+  slug: string;
+  clicks: number;
+  views: number;
+  unitsSold: number;
+  revenue: number;
+};
+
+export const adminProductPerformance = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<ProductPerformance[]> => {
+    await assertStaff(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const [eventsRes, ordersRes] = await Promise.all([
+      supabaseAdmin.from("site_events").select("event_type,product_slug").limit(50000),
+      supabaseAdmin.from("orders").select("items,payment_status"),
+    ]);
+
+    const stats = new Map<string, ProductPerformance>();
+    const row = (slug: string) => {
+      const existing = stats.get(slug) ?? { slug, clicks: 0, views: 0, unitsSold: 0, revenue: 0 };
+      stats.set(slug, existing);
+      return existing;
+    };
+
+    for (const e of eventsRes.data ?? []) {
+      if (!e.product_slug) continue;
+      const r = row(e.product_slug);
+      if (e.event_type === "product_click") r.clicks += 1;
+      if (e.event_type === "product_view") r.views += 1;
+    }
+
+    for (const o of ordersRes.data ?? []) {
+      if (o.payment_status !== "paid") continue;
+      const items = (o.items ?? []) as unknown as Array<{ slug?: string; qty?: number; price?: number }>;
+      for (const item of items) {
+        if (!item?.slug) continue;
+        const r = row(item.slug);
+        r.unitsSold += item.qty ?? 0;
+        r.revenue += (item.price ?? 0) * (item.qty ?? 0);
+      }
+    }
+
+    return [...stats.values()];
+  });
+
+/* ------------ revenue by payment status ------------ */
+
+export const adminRevenueBreakdown = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) =>
+    z.object({ days: z.number().int().min(1).max(365).default(30) }).default({ days: 30 }).parse(input ?? {}),
+  )
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const since = new Date(Date.now() - data.days * 86_400_000).toISOString();
+    const { data: rows, error } = await context.supabase
+      .from("orders")
+      .select("total,payment_status,payment_method,status")
+      .gte("created_at", since);
+    if (error) throw error;
+
+    const byStatus = new Map<string, { status: string; orders: number; amount: number }>();
+    const byMethod = new Map<string, { method: string; orders: number; amount: number }>();
+    for (const o of rows ?? []) {
+      const status = o.payment_status ?? "unknown";
+      const s = byStatus.get(status) ?? { status, orders: 0, amount: 0 };
+      s.orders += 1;
+      s.amount += o.total ?? 0;
+      byStatus.set(status, s);
+
+      const method = (o as { payment_method?: string | null }).payment_method ?? "unspecified";
+      const m = byMethod.get(method) ?? { method, orders: 0, amount: 0 };
+      m.orders += 1;
+      m.amount += o.total ?? 0;
+      byMethod.set(method, m);
+    }
+
+    const list = [...byStatus.values()].sort((a, b) => b.amount - a.amount);
+    return {
+      days: data.days,
+      byStatus: list,
+      byMethod: [...byMethod.values()].sort((a, b) => b.amount - a.amount),
+      collected: list.find((s) => s.status === "paid")?.amount ?? 0,
+      pending: list.filter((s) => s.status !== "paid" && s.status !== "refunded" && s.status !== "failed").reduce((n, s) => n + s.amount, 0),
+      refunded: list.find((s) => s.status === "refunded")?.amount ?? 0,
+      failed: list.find((s) => s.status === "failed")?.amount ?? 0,
+    };
+  });
