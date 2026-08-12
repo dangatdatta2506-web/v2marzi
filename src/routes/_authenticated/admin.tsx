@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/products";
 import { downloadInvoice, type InvoiceOrder } from "@/lib/invoice";
 import {
@@ -11,6 +12,8 @@ import {
   adminListDeals,
   adminListOrders,
   adminListProducts,
+  adminProductPerformance,
+  adminRevenueBreakdown,
   adminSaveDeal,
   adminSaveProduct,
   adminSetStock,
@@ -20,6 +23,11 @@ import {
   verifyAdminOtp,
 } from "@/lib/admin.functions";
 import { adminAnalytics } from "@/lib/analytics.functions";
+import {
+  adminDeletePincode,
+  adminListPincodes,
+  adminSavePincode,
+} from "@/lib/pincode.functions";
 import { adminListUsers, adminSetUserRole, type ManagedRole } from "@/lib/users.functions";
 import { downloadCsv } from "@/lib/csv";
 
@@ -44,7 +52,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 type OrderItem = { slug: string; name: string; price: number; qty: number };
 const statuses = ["pending", "confirmed", "packed", "shipped", "delivered", "cancelled"] as const;
 type Status = (typeof statuses)[number];
-type Tab = "insights" | "orders" | "products" | "deals" | "users";
+type Tab = "insights" | "orders" | "products" | "pincodes" | "deals" | "users";
 
 function AdminPage() {
   const { loading } = useAuth();
@@ -73,8 +81,8 @@ function AdminPage() {
 
   const isAdmin = status.data.isAdmin;
   const tabs: Tab[] = isAdmin
-    ? ["insights", "orders", "products", "deals", "users"]
-    : ["orders", "products"];
+    ? ["insights", "orders", "products", "pincodes", "deals", "users"]
+    : ["orders", "products", "pincodes"];
   const activeTab = tabs.includes(tab) ? tab : tabs[0]!;
 
   return (
@@ -103,6 +111,7 @@ function AdminPage() {
       {activeTab === "insights" && <InsightsPanel />}
       {activeTab === "orders" && <OrdersPanel />}
       {activeTab === "products" && <ProductsPanel />}
+      {activeTab === "pincodes" && <PincodesPanel />}
       {activeTab === "deals" && <DealsPanel />}
       {activeTab === "users" && <UsersPanel />}
 
@@ -647,7 +656,9 @@ function ProductsPanel() {
     queryFn: () => adminProductPerformance(),
   });
 
-  const stats = new Map((perf.data ?? []).map((p) => [p.slug, p]));
+  const stats = new Map(
+    (perf.data ?? []).map((p) => [p.slug, p] as const),
+  );
   const statFor = (slug: string) =>
     stats.get(slug) ?? { slug, clicks: 0, views: 0, unitsSold: 0, revenue: 0 };
 
@@ -828,8 +839,8 @@ function ProductsPanel() {
                 <td className="px-4 py-3">
                   <p>{p.name}</p>
                   <p className="text-xs text-muted-foreground">{p.slug}</p>
-                  {p.sizes.length > 0 && (
-                    <p className="text-xs text-muted-foreground">Sizes: {p.sizes.join(", ")}</p>
+                  {(p.sizes ?? []).length > 0 && (
+                    <p className="text-xs text-muted-foreground">Sizes: {(p.sizes ?? []).join(", ")}</p>
                   )}
                 </td>
                 <td className="px-4 py-3 text-xs uppercase tracking-[0.14em]">{p.collection}</td>
