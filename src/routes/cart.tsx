@@ -90,7 +90,11 @@ function CartPage() {
           coupon: coupon?.code ?? undefined,
           customerName: selected.full_name,
           customerPhone: selected.phone,
-          shippingAddress: formatAddress(selected),
+          shippingAddress:
+            formatAddress(selected) +
+            (giftWrap
+              ? ` — GIFT ORDER${giftNote.trim() ? `: “${giftNote.trim()}”` : ""}`
+              : ""),
         },
       });
 
@@ -361,9 +365,12 @@ function CartPage() {
           </aside>
         </div>
       )}
+
+      <RecentlyViewed />
     </div>
   );
 }
+
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
