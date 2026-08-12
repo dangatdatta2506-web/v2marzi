@@ -296,6 +296,48 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          approved: boolean
+          author_name: string
+          body: string
+          created_at: string
+          id: string
+          product_slug: string
+          rating: number
+          title: string
+          updated_at: string
+          user_id: string
+          verified_purchase: boolean
+        }
+        Insert: {
+          approved?: boolean
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          product_slug: string
+          rating?: number
+          title?: string
+          updated_at?: string
+          user_id: string
+          verified_purchase?: boolean
+        }
+        Update: {
+          approved?: boolean
+          author_name?: string
+          body?: string
+          created_at?: string
+          id?: string
+          product_slug?: string
+          rating?: number
+          title?: string
+          updated_at?: string
+          user_id?: string
+          verified_purchase?: boolean
+        }
+        Relationships: []
+      }
       serviceable_pincodes: {
         Row: {
           active: boolean
