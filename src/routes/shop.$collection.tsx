@@ -1,7 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/product-card";
-import { byCollection, collections, type Collection } from "@/lib/products";
+import { RecentlyViewed } from "@/components/recently-viewed";
+import { productsQuery } from "@/lib/catalog";
+import {
+  collections,
+  products as fallbackProducts,
+  type Collection,
+} from "@/lib/products";
 
 const valid = ["core", "baddie", "corporate"];
 
@@ -32,27 +39,47 @@ export const Route = createFileRoute("/shop/$collection")({
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "rating";
 
+const priceBands = [
+  { id: "any", label: "Any price", test: () => true },
+  { id: "under-2000", label: "Under ₹2,000", test: (p: number) => p < 2000 },
+  { id: "2000-4000", label: "₹2,000 – ₹4,000", test: (p: number) => p >= 2000 && p <= 4000 },
+  { id: "above-4000", label: "Above ₹4,000", test: (p: number) => p > 4000 },
+];
+
 function CollectionPage() {
   const { collection } = Route.useParams();
   const { meta } = Route.useLoaderData() as { meta: (typeof collections)[number] };
   const [sort, setSort] = useState<SortKey>("featured");
   const [category, setCategory] = useState("All");
+  const [material, setMaterial] = useState("All");
+  const [band, setBand] = useState("any");
+  const [onlyOffers, setOnlyOffers] = useState(false);
   const [query, setQuery] = useState("");
 
-  const all = valid.includes(collection) ? byCollection(collection as Collection) : [];
+  const { data: catalog } = useQuery(productsQuery);
+  const source = catalog ?? fallbackProducts;
+  const all = valid.includes(collection)
+    ? source.filter((p) => p.collection === (collection as Collection))
+    : [];
   const categories = ["All", ...Array.from(new Set(all.map((p) => p.category)))];
+  const materials = ["All", ...Array.from(new Set(all.map((p) => p.material)))];
 
   const list = useMemo(() => {
+    const priceTest = (priceBands.find((b) => b.id === band) ?? priceBands[0]!).test;
     let out = all.filter(
       (p) =>
         (category === "All" || p.category === category) &&
+        (material === "All" || p.material === material) &&
+        priceTest(p.price) &&
+        (!onlyOffers || Boolean(p.compareAt)) &&
         p.name.toLowerCase().includes(query.toLowerCase()),
     );
     if (sort === "price-asc") out = [...out].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") out = [...out].sort((a, b) => b.price - a.price);
     if (sort === "rating") out = [...out].sort((a, b) => b.rating - a.rating);
     return out;
-  }, [all, category, query, sort]);
+  }, [all, category, material, band, onlyOffers, query, sort]);
+
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
