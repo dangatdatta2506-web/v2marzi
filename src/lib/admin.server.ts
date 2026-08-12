@@ -3,10 +3,14 @@ import type { Database } from "@/integrations/supabase/types";
 
 export const ADMIN_2FA_HOURS = 8;
 
+/** Two-step email code is temporarily disabled for all admins. */
+const BYPASS_2FA_FOR_ALL_ADMINS = true;
+
 /** Main admin accounts that skip the two-step email code. */
-const NO_2FA_ADMIN_EMAILS = new Set(["admin@marzi.com"]);
+const NO_2FA_ADMIN_EMAILS = new Set(["admin@marzi.com", "admin@marzi.store"]);
 
 export function skips2fa(email: string | null | undefined): boolean {
+  if (BYPASS_2FA_FOR_ALL_ADMINS) return true;
   return Boolean(email && NO_2FA_ADMIN_EMAILS.has(email.trim().toLowerCase()));
 }
 
