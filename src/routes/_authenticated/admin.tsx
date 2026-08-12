@@ -28,7 +28,12 @@ import {
   adminListPincodes,
   adminSavePincode,
 } from "@/lib/pincode.functions";
-import { adminListUsers, adminSetUserRole, type ManagedRole } from "@/lib/users.functions";
+import {
+  adminListUsers,
+  adminSetUserRole,
+  type ManagedRole,
+  type ManagedUser,
+} from "@/lib/users.functions";
 import { downloadCsv } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -1298,9 +1303,30 @@ const roleCopy: Record<ManagedRole, string> = {
   user: "Buyer — shops and tracks their own orders",
 };
 
+type Segment = "all" | "buyers" | "repeat" | "high-spend" | "no-orders" | "staff";
+
+const segmentLabels: Record<Segment, string> = {
+  all: "Everyone",
+  buyers: "Customers (1+ orders)",
+  repeat: "Repeat customers (2+ orders)",
+  "high-spend": "High spenders (₹5,000+)",
+  "no-orders": "Signed up, never ordered",
+  staff: "Staff (admins & operators)",
+};
+
+function matchesSegment(u: ManagedUser, segment: Segment) {
+  if (segment === "buyers") return u.orders > 0;
+  if (segment === "repeat") return u.orders > 1;
+  if (segment === "high-spend") return u.spend >= 5000;
+  if (segment === "no-orders") return u.orders === 0;
+  if (segment === "staff") return u.role === "admin" || u.role === "operator";
+  return true;
+}
+
 function UsersPanel() {
   const qc = useQueryClient();
   const [query, setQuery] = useState("");
+  const [segment, setSegment] = useState<Segment>("all");
   const { data, isLoading } = useQuery({
     queryKey: ["admin-users"],
     queryFn: () => adminListUsers(),
@@ -1318,11 +1344,12 @@ function UsersPanel() {
 
   const users = data ?? [];
   const term = query.trim().toLowerCase();
+  const inSegment = users.filter((u) => matchesSegment(u, segment));
   const filtered = term
-    ? users.filter((u) =>
+    ? inSegment.filter((u) =>
         [u.email, u.fullName, u.phone].some((v) => v?.toLowerCase().includes(term)),
       )
-    : users;
+    : inSegment;
 
   const counts = {
     admin: users.filter((u) => u.role === "admin").length,
@@ -1351,11 +1378,26 @@ function UsersPanel() {
           placeholder="Search by name, email or phone"
           className="h-11 w-full max-w-sm border border-border bg-background px-4 text-sm outline-none focus:border-gold"
         />
+        <label className="sr-only" htmlFor="user-segment">
+          Customer segment
+        </label>
+        <select
+          id="user-segment"
+          value={segment}
+          onChange={(e) => setSegment(e.target.value as Segment)}
+          className="h-11 border border-border bg-background px-3 text-sm"
+        >
+          {(Object.keys(segmentLabels) as Segment[]).map((key) => (
+            <option key={key} value={key}>
+              {segmentLabels[key]}
+            </option>
+          ))}
+        </select>
         <button
           onClick={() =>
             downloadCsv(
-              "marzi-users.csv",
-              users.map((u) => ({
+              `marzi-users-${segment}.csv`,
+              filtered.map((u) => ({
                 email: u.email,
                 name: u.fullName,
                 phone: u.phone,
@@ -1368,7 +1410,7 @@ function UsersPanel() {
           }
           className="border border-foreground px-4 py-2 text-[0.7rem] uppercase tracking-[0.18em]"
         >
-          Export users CSV
+          Export {filtered.length} {segment === "all" ? "people" : "matches"} CSV
         </button>
       </div>
 
