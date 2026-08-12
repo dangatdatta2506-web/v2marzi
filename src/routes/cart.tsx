@@ -11,6 +11,7 @@ import { track } from "@/lib/analytics";
 import { createCheckoutOrder, verifyCheckoutPayment } from "@/lib/checkout.functions";
 import { AddressBook, formatAddress, type Address } from "@/components/address-book";
 import { dealsQuery } from "@/lib/catalog";
+import { RecentlyViewed } from "@/components/recently-viewed";
 
 
 export const Route = createFileRoute("/cart")({
