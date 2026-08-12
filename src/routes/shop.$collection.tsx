@@ -176,7 +176,7 @@ function CollectionPage() {
             type="checkbox"
             checked={onlyOffers}
             onChange={(e) => setOnlyOffers(e.target.checked)}
-            className="size-4 accent-[hsl(var(--gold))]"
+            className="size-4 accent-gold"
           />
           On offer only
         </label>
