@@ -5,6 +5,11 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/products";
+import {
+  adminDeleteReview,
+  adminListReviews,
+  adminModerateReview,
+} from "@/lib/reviews.functions";
 import { downloadInvoice, type InvoiceOrder } from "@/lib/invoice";
 import {
   adminDeleteDeal,
@@ -57,7 +62,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 type OrderItem = { slug: string; name: string; price: number; qty: number };
 const statuses = ["pending", "confirmed", "packed", "shipped", "delivered", "cancelled"] as const;
 type Status = (typeof statuses)[number];
-type Tab = "insights" | "orders" | "products" | "pincodes" | "deals" | "users";
+type Tab = "insights" | "orders" | "products" | "reviews" | "pincodes" | "deals" | "users";
 
 function AdminPage() {
   const { loading } = useAuth();
@@ -86,8 +91,8 @@ function AdminPage() {
 
   const isAdmin = status.data.isAdmin;
   const tabs: Tab[] = isAdmin
-    ? ["insights", "orders", "products", "pincodes", "deals", "users"]
-    : ["orders", "products", "pincodes"];
+    ? ["insights", "orders", "products", "reviews", "pincodes", "deals", "users"]
+    : ["orders", "products", "reviews", "pincodes"];
   const activeTab = tabs.includes(tab) ? tab : tabs[0]!;
 
   return (
@@ -116,6 +121,7 @@ function AdminPage() {
       {activeTab === "insights" && <InsightsPanel />}
       {activeTab === "orders" && <OrdersPanel />}
       {activeTab === "products" && <ProductsPanel />}
+      {activeTab === "reviews" && <ReviewsPanel />}
       {activeTab === "pincodes" && <PincodesPanel />}
       {activeTab === "deals" && <DealsPanel />}
       {activeTab === "users" && <UsersPanel />}
@@ -1472,6 +1478,77 @@ function UsersPanel() {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+function ReviewsPanel() {
+  const qc = useQueryClient();
+  const list = useQuery({ queryKey: ["admin", "reviews"], queryFn: () => adminListReviews() });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["admin", "reviews"] });
+
+  const moderate = useMutation({
+    mutationFn: (v: { id: string; approved: boolean }) => adminModerateReview({ data: v }),
+    onSuccess: (_d, v) => {
+      toast.success(v.approved ? "Review published" : "Review hidden");
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => adminDeleteReview({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Review deleted");
+      refresh();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  if (list.isLoading) return <p className="text-sm text-muted-foreground">Loading reviews…</p>;
+  const reviews = list.data ?? [];
+  const pending = reviews.filter((r) => !r.approved).length;
+
+  return (
+    <div>
+      <p className="text-sm text-muted-foreground">
+        {reviews.length} reviews · {pending} awaiting approval
+      </p>
+      <div className="mt-6 space-y-4">
+        {reviews.map((r) => (
+          <article key={r.id} className="border border-border p-5">
+            <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+              <span className="text-foreground">{"★".repeat(r.rating)}</span>
+              <span>{r.productSlug}</span>
+              {r.verifiedPurchase && <span className="text-gold">Verified purchase</span>}
+              <span>{new Date(r.createdAt).toLocaleDateString("en-IN")}</span>
+              <span className={r.approved ? "text-gold" : ""}>
+                {r.approved ? "Published" : "Pending"}
+              </span>
+            </div>
+            {r.title && <p className="mt-3 font-display text-xl">{r.title}</p>}
+            {r.body && <p className="mt-2 text-sm text-muted-foreground">{r.body}</p>}
+            <p className="mt-2 text-xs text-muted-foreground">— {r.authorName}</p>
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={() => moderate.mutate({ id: r.id, approved: !r.approved })}
+                className="border border-foreground px-4 py-2 text-[0.66rem] uppercase tracking-[0.16em]"
+              >
+                {r.approved ? "Hide" : "Approve"}
+              </button>
+              <button
+                onClick={() => remove.mutate(r.id)}
+                className="border border-border px-4 py-2 text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground"
+              >
+                Delete
+              </button>
+            </div>
+          </article>
+        ))}
+        {reviews.length === 0 && (
+          <p className="text-sm text-muted-foreground">No reviews submitted yet.</p>
+        )}
       </div>
     </div>
   );

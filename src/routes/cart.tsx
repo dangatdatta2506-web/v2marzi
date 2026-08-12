@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Minus, Plus, X } from "lucide-react";
+import { Gift, Minus, Plus, Truck, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { collectionImage } from "@/lib/images";
@@ -11,6 +11,7 @@ import { track } from "@/lib/analytics";
 import { createCheckoutOrder, verifyCheckoutPayment } from "@/lib/checkout.functions";
 import { AddressBook, formatAddress, type Address } from "@/components/address-book";
 import { dealsQuery } from "@/lib/catalog";
+import { RecentlyViewed } from "@/components/recently-viewed";
 
 
 export const Route = createFileRoute("/cart")({
@@ -37,6 +38,8 @@ declare global {
   }
 }
 
+const FREE_SHIPPING = 1999;
+
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
     if (window.Razorpay) return resolve(true);
@@ -57,6 +60,8 @@ function CartPage() {
   const [coupon, setCoupon] = useState<{ code: string; percent: number } | null>(null);
   const [selected, setSelected] = useState<Address | null>(null);
   const [busy, setBusy] = useState(false);
+  const [giftWrap, setGiftWrap] = useState(false);
+  const [giftNote, setGiftNote] = useState("");
 
   const discount = coupon ? Math.round((subtotal * coupon.percent) / 100) : 0;
   const shipping = subtotal === 0 || subtotal > 1999 ? 0 : 149;
@@ -86,7 +91,11 @@ function CartPage() {
           coupon: coupon?.code ?? undefined,
           customerName: selected.full_name,
           customerPhone: selected.phone,
-          shippingAddress: formatAddress(selected),
+          shippingAddress:
+            formatAddress(selected) +
+            (giftWrap
+              ? ` — GIFT ORDER${giftNote.trim() ? `: “${giftNote.trim()}”` : ""}`
+              : ""),
         },
       });
 
@@ -216,6 +225,27 @@ function CartPage() {
           <aside className="h-fit border border-border bg-card p-8">
             <h2 className="font-display text-3xl">Order summary</h2>
 
+            <div className="mt-6 border border-border bg-background p-4">
+              {subtotal >= FREE_SHIPPING ? (
+                <p className="flex items-center gap-2 text-xs text-gold">
+                  <Truck className="size-4" /> Free shipping unlocked
+                </p>
+              ) : (
+                <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Truck className="size-4 text-gold" /> Add {inr(FREE_SHIPPING - subtotal)} more for
+                  free shipping
+                </p>
+              )}
+              <span className="mt-3 block h-1.5 bg-secondary">
+                <span
+                  className="block h-full bg-gold transition-all"
+                  style={{ width: `${Math.min(100, Math.round((subtotal / FREE_SHIPPING) * 100))}%` }}
+                />
+              </span>
+            </div>
+
+
+
             <form
               className="mt-6 flex"
               onSubmit={(e) => {
@@ -246,6 +276,57 @@ function CartPage() {
                 Apply
               </button>
             </form>
+
+            {(deals ?? []).some((d) => d.code) && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {(deals ?? [])
+                  .filter((d) => d.code)
+                  .slice(0, 3)
+                  .map((d) => (
+                    <button
+                      key={d.id}
+                      onClick={() => {
+                        setCode(d.code!);
+                        setCoupon({ code: d.code!, percent: d.discountPercent });
+                        toast.success(`Coupon applied — ${d.discountPercent}% off`);
+                      }}
+                      className="border border-dashed border-gold px-3 py-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-gold"
+                    >
+                      {d.code} · {d.discountPercent}% off
+                    </button>
+                  ))}
+              </div>
+            )}
+
+            <div className="mt-6 border border-border bg-background p-4">
+              <label className="flex cursor-pointer items-center gap-2 text-xs">
+                <input
+                  type="checkbox"
+                  checked={giftWrap}
+                  onChange={(e) => setGiftWrap(e.target.checked)}
+                  className="size-4 accent-gold"
+                />
+                <Gift className="size-4 text-gold" /> Send as a gift (free gift box, no prices on the
+                invoice)
+              </label>
+              {giftWrap && (
+                <>
+                  <label className="sr-only" htmlFor="gift-note">
+                    Gift message
+                  </label>
+                  <textarea
+                    id="gift-note"
+                    value={giftNote}
+                    onChange={(e) => setGiftNote(e.target.value.slice(0, 200))}
+                    rows={2}
+                    placeholder="Add a short gift message (optional)"
+                    className="mt-3 w-full border border-border bg-background px-3 py-2 text-sm outline-none focus:border-gold"
+                  />
+                </>
+              )}
+            </div>
+
+
 
             <dl className="mt-8 space-y-3 text-sm">
               <Row label="Subtotal" value={inr(subtotal)} />
@@ -285,9 +366,12 @@ function CartPage() {
           </aside>
         </div>
       )}
+
+      <RecentlyViewed />
     </div>
   );
 }
+
 
 function Row({ label, value }: { label: string; value: string }) {
   return (

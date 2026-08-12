@@ -1,7 +1,14 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/product-card";
-import { byCollection, collections, type Collection } from "@/lib/products";
+import { RecentlyViewed } from "@/components/recently-viewed";
+import { productsQuery } from "@/lib/catalog";
+import {
+  collections,
+  products as fallbackProducts,
+  type Collection,
+} from "@/lib/products";
 
 const valid = ["core", "baddie", "corporate"];
 
@@ -32,27 +39,47 @@ export const Route = createFileRoute("/shop/$collection")({
 
 type SortKey = "featured" | "price-asc" | "price-desc" | "rating";
 
+const priceBands = [
+  { id: "any", label: "Any price", test: () => true },
+  { id: "under-2000", label: "Under ₹2,000", test: (p: number) => p < 2000 },
+  { id: "2000-4000", label: "₹2,000 – ₹4,000", test: (p: number) => p >= 2000 && p <= 4000 },
+  { id: "above-4000", label: "Above ₹4,000", test: (p: number) => p > 4000 },
+];
+
 function CollectionPage() {
   const { collection } = Route.useParams();
   const { meta } = Route.useLoaderData() as { meta: (typeof collections)[number] };
   const [sort, setSort] = useState<SortKey>("featured");
   const [category, setCategory] = useState("All");
+  const [material, setMaterial] = useState("All");
+  const [band, setBand] = useState("any");
+  const [onlyOffers, setOnlyOffers] = useState(false);
   const [query, setQuery] = useState("");
 
-  const all = valid.includes(collection) ? byCollection(collection as Collection) : [];
+  const { data: catalog } = useQuery(productsQuery);
+  const source = catalog ?? fallbackProducts;
+  const all = valid.includes(collection)
+    ? source.filter((p) => p.collection === (collection as Collection))
+    : [];
   const categories = ["All", ...Array.from(new Set(all.map((p) => p.category)))];
+  const materials = ["All", ...Array.from(new Set(all.map((p) => p.material)))];
 
   const list = useMemo(() => {
+    const priceTest = (priceBands.find((b) => b.id === band) ?? priceBands[0]!).test;
     let out = all.filter(
       (p) =>
         (category === "All" || p.category === category) &&
+        (material === "All" || p.material === material) &&
+        priceTest(p.price) &&
+        (!onlyOffers || Boolean(p.compareAt)) &&
         p.name.toLowerCase().includes(query.toLowerCase()),
     );
     if (sort === "price-asc") out = [...out].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") out = [...out].sort((a, b) => b.price - a.price);
     if (sort === "rating") out = [...out].sort((a, b) => b.rating - a.rating);
     return out;
-  }, [all, category, query, sort]);
+  }, [all, category, material, band, onlyOffers, query, sort]);
+
 
   return (
     <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
@@ -113,6 +140,49 @@ function CollectionPage() {
         </div>
       </div>
 
+      <div className="mt-4 flex flex-wrap items-center gap-3 text-[0.7rem] uppercase tracking-[0.16em] text-muted-foreground">
+        <label htmlFor="band" className="sr-only">
+          Filter by price
+        </label>
+        <select
+          id="band"
+          value={band}
+          onChange={(e) => setBand(e.target.value)}
+          className="h-10 border border-border bg-background px-3 text-sm normal-case tracking-normal outline-none focus:border-gold"
+        >
+          {priceBands.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.label}
+            </option>
+          ))}
+        </select>
+        <label htmlFor="material" className="sr-only">
+          Filter by material
+        </label>
+        <select
+          id="material"
+          value={material}
+          onChange={(e) => setMaterial(e.target.value)}
+          className="h-10 max-w-56 border border-border bg-background px-3 text-sm normal-case tracking-normal outline-none focus:border-gold"
+        >
+          {materials.map((m) => (
+            <option key={m} value={m}>
+              {m === "All" ? "All materials" : m}
+            </option>
+          ))}
+        </select>
+        <label className="flex cursor-pointer items-center gap-2">
+          <input
+            type="checkbox"
+            checked={onlyOffers}
+            onChange={(e) => setOnlyOffers(e.target.checked)}
+            className="size-4 accent-gold"
+          />
+          On offer only
+        </label>
+        <span className="ml-auto">{list.length} pieces</span>
+      </div>
+
       {list.length ? (
         <div className="mt-12 grid gap-x-6 gap-y-14 sm:grid-cols-2 lg:grid-cols-3">
           {list.map((p) => (
@@ -124,6 +194,24 @@ function CollectionPage() {
           Nothing matches that filter yet.
         </p>
       )}
+
+      <section className="mt-24 grid gap-6 md:grid-cols-3">
+        <Link to="/gifting" className="border border-border p-8 transition-colors hover:border-gold">
+          <p className="font-display text-2xl">Gifting</p>
+          <p className="mt-3 text-sm text-muted-foreground">Shop by budget and occasion.</p>
+        </Link>
+        <Link to="/best-sellers" className="border border-border p-8 transition-colors hover:border-gold">
+          <p className="font-display text-2xl">Best sellers</p>
+          <p className="mt-3 text-sm text-muted-foreground">The pieces everyone reorders.</p>
+        </Link>
+        <Link to="/new-arrivals" className="border border-border p-8 transition-colors hover:border-gold">
+          <p className="font-display text-2xl">New arrivals</p>
+          <p className="mt-3 text-sm text-muted-foreground">Just landed in the edit.</p>
+        </Link>
+      </section>
+
+      <RecentlyViewed />
     </div>
+
   );
 }

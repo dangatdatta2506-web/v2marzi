@@ -4,6 +4,11 @@ import { Heart, MapPin, Minus, Plus, Share2, Star, Truck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ProductCard } from "@/components/product-card";
+import { ProductReviews } from "@/components/product-reviews";
+import { RecentlyViewed } from "@/components/recently-viewed";
+import { InfoAccordion } from "@/components/info-accordion";
+import { OffersStrip, TrustStrip } from "@/components/product-trust";
+import { pushRecentlyViewed } from "@/lib/recently-viewed";
 import { collectionImage } from "@/lib/images";
 import { getProduct, inr, products, type Product } from "@/lib/products";
 import { productsQuery } from "@/lib/catalog";
@@ -140,7 +145,9 @@ function ProductPage() {
   const [size, setSize] = useState<string | null>(null);
 
   useEffect(() => {
-    if (product) track("product_view", { productSlug: product.slug, productName: product.name });
+    if (!product) return;
+    track("product_view", { productSlug: product.slug, productName: product.name });
+    pushRecentlyViewed(product.slug);
   }, [product?.slug, product?.name]);
 
   if (!product) throw notFound();
@@ -358,8 +365,38 @@ function ProductPage() {
           <p className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
             <Truck className="size-4" /> Estimated delivery by {delivery} · Free shipping over ₹1,999
           </p>
+
+          <OffersStrip price={product.price} />
+          <TrustStrip />
+
+          <InfoAccordion
+            items={[
+              {
+                title: "Care & wear",
+                content:
+                  "Waterproof and sweat-proof — wear it to the gym, the shower and the sea. Wipe with a soft dry cloth after wear and keep away from perfume and harsh cleaners to keep the shine longer.",
+              },
+              {
+                title: "Warranty",
+                content:
+                  "Covered by a 1-year plating warranty against tarnishing and discolouration under normal wear. Reach out on WhatsApp with your order ID and we'll sort a replacement.",
+              },
+              {
+                title: "Shipping & returns",
+                content:
+                  "Dispatched within 24 hours on working days. Free shipping on orders above ₹1,999, cash on delivery available on eligible PIN codes, and 7-day easy returns on unworn pieces in original packaging.",
+              },
+              {
+                title: "Size guide",
+                content:
+                  "Rings run true to Indian sizes. For chains: 16in sits at the collarbone, 18in just below. Unsure? Message us and we'll help you pick.",
+              },
+            ]}
+          />
         </div>
       </div>
+
+      <ProductReviews slug={product.slug} productName={product.name} />
 
       {related.length > 0 && (
         <section className="mt-24">
@@ -371,6 +408,9 @@ function ProductPage() {
           </div>
         </section>
       )}
+
+      <RecentlyViewed excludeSlug={product.slug} />
+
     </div>
   );
 }

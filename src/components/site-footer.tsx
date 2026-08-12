@@ -11,6 +11,9 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { to: "/shop/$collection", label: "Core", params: { collection: "core" } },
       { to: "/shop/$collection", label: "Baddie", params: { collection: "baddie" } },
       { to: "/shop/$collection", label: "Corporate", params: { collection: "corporate" } },
+      { to: "/best-sellers", label: "Best sellers" },
+      { to: "/new-arrivals", label: "New arrivals" },
+      { to: "/gifting", label: "Gifting" },
     ],
   },
   {
