@@ -15,7 +15,6 @@ const nav: NavItem[] = [
   { to: "/", label: "Home" },
   { to: "/shop/$collection", label: "Core", params: { collection: "core" } },
   { to: "/best-sellers", label: "Best sellers" },
-  { to: "/best-sellers", label: "Best sellers" },
   { to: "/new-arrivals", label: "New in" },
   { to: "/gifting", label: "Gifting" },
   { to: "/about", label: "About" },
@@ -187,7 +186,7 @@ export function SiteHeader() {
           MARZI
         </Link>
 
-        <div className="hidden min-w-0 flex-1 md:block md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
+        <div className="hidden min-w-0 flex-1 md:block md:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl">
           <SearchBar />
         </div>
 
