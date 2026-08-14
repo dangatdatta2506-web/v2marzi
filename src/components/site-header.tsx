@@ -56,10 +56,10 @@ function SearchBar({ onDone }: { onDone?: () => void }) {
         onFocus={() => setOpen(true)}
         onBlur={() => window.setTimeout(() => setOpen(false), 150)}
         placeholder="Search necklaces, rings, studs…"
-        className="h-10 w-full border border-border bg-background pl-9 pr-3 text-sm outline-none focus:border-gold"
+        className="h-12 w-full border border-border bg-background pl-10 pr-4 text-sm outline-none transition-colors focus:border-gold"
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-11 z-50 max-h-80 overflow-auto border border-border bg-background shadow-lg">
+        <ul className="absolute left-0 right-0 top-[3.25rem] z-50 max-h-80 overflow-auto border border-border bg-background shadow-lg">
           {results.map((p) => (
             <li key={p.slug}>
               <Link
@@ -85,7 +85,7 @@ function SearchBar({ onDone }: { onDone?: () => void }) {
         </ul>
       )}
       {open && term.trim().length >= 2 && results.length === 0 && (
-        <p className="absolute left-0 right-0 top-11 z-50 border border-border bg-background px-4 py-3 text-xs text-muted-foreground">
+        <p className="absolute left-0 right-0 top-[3.25rem] z-50 border border-border bg-background px-4 py-3 text-xs text-muted-foreground">
           Nothing matches “{term.trim()}”.
         </p>
       )}
@@ -177,21 +177,93 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/85 backdrop-blur-md">
-      <div className="mx-auto flex h-20 max-w-7xl items-center justify-between gap-6 px-5 sm:px-8">
+      {/* Top row: logo, search, actions */}
+      <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link
           to="/"
-          className="font-display text-2xl tracking-[0.35em] text-foreground"
+          className="font-display text-2xl tracking-[0.35em] text-foreground sm:text-3xl"
           aria-label="Marzi home"
         >
           MARZI
         </Link>
 
-        <div className="hidden min-w-0 flex-1 md:block md:max-w-2xl lg:max-w-3xl xl:max-w-4xl 2xl:max-w-5xl">
+        <div className="hidden min-w-0 flex-1 md:block lg:max-w-4xl xl:max-w-5xl 2xl:max-w-6xl">
           <SearchBar />
         </div>
 
+        <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3 md:flex-initial">
+          <div className="hidden lg:block">
+            <PincodeCheck />
+          </div>
+          {user ? (
+            <button
+              onClick={signOut}
+              aria-label="Sign out"
+              title={user.email ?? "Sign out"}
+              className="flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+            >
+              <LogOut className="size-4" />
+            </button>
+          ) : (
+            <Link
+              to="/auth"
+              aria-label="Sign in"
+              className="flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+            >
+              <User className="size-4" />
+            </Link>
+          )}
+          <Link
+            to="/wishlist"
+            aria-label="Wishlist"
+            className="relative flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+          >
+            <Heart className="size-4" />
+            {wishlist.length > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-gold text-[0.62rem] text-gold-foreground">
+                {wishlist.length}
+              </span>
+            )}
+          </Link>
+          <button
+            onClick={toggle}
+            aria-label="Toggle dark mode"
+            className="flex size-10 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
+          >
+            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
+          </button>
+          <Link
+            to="/cart"
+            className="group relative flex items-center gap-2 pr-2 text-[0.78rem] uppercase tracking-[0.18em] text-foreground"
+          >
+            <ShoppingBag className="size-4" />
+            <span className="hidden sm:inline">Bag</span>
+            <span className="absolute -top-2 right-0 translate-x-1/2 flex size-5 items-center justify-center rounded-full bg-gold text-[0.65rem] text-gold-foreground">
+              {count}
+            </span>
+          </Link>
+          <button
+            className="xl:hidden"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle menu"
+            aria-expanded={open}
+          >
+            {open ? <X className="size-5" /> : <Menu className="size-5" />}
+          </button>
+        </div>
+      </div>
 
-        <nav className="hidden items-center gap-7 xl:flex" aria-label="Main">
+      {/* Mobile search bar */}
+      <div className="border-t border-border px-4 pb-3 pt-3 md:hidden">
+        <SearchBar />
+      </div>
+
+      {/* Bottom row: navigation */}
+      <nav
+        className="hidden border-t border-border px-4 py-3 xl:flex xl:justify-center"
+        aria-label="Main"
+      >
+        <div className="flex items-center gap-8">
           {nav.map((item) => (
             <Link
               key={item.label}
@@ -215,77 +287,12 @@ export function SiteHeader() {
               {isAdmin ? "Admin" : "Staff"}
             </Link>
           )}
-        </nav>
-
-        <div className="flex items-center gap-3">
-          <div className="hidden lg:block">
-            <PincodeCheck />
-          </div>
-          {user ? (
-            <button
-              onClick={signOut}
-              aria-label="Sign out"
-              title={user.email ?? "Sign out"}
-              className="flex size-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
-            >
-              <LogOut className="size-4" />
-            </button>
-          ) : (
-            <Link
-              to="/auth"
-              aria-label="Sign in"
-              className="flex size-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
-            >
-              <User className="size-4" />
-            </Link>
-          )}
-          <Link
-            to="/wishlist"
-            aria-label="Wishlist"
-            className="relative flex size-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
-          >
-            <Heart className="size-4" />
-            {wishlist.length > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex size-5 items-center justify-center rounded-full bg-gold text-[0.62rem] text-gold-foreground">
-                {wishlist.length}
-              </span>
-            )}
-          </Link>
-          <button
-            onClick={toggle}
-            aria-label="Toggle dark mode"
-            className="flex size-9 items-center justify-center rounded-full border border-border text-foreground transition-colors hover:bg-secondary"
-          >
-            {theme === "dark" ? <Sun className="size-4" /> : <Moon className="size-4" />}
-          </button>
-          <Link
-            to="/cart"
-            className="group relative mr-3 flex items-center gap-2 pr-2 text-[0.78rem] uppercase tracking-[0.18em] text-foreground"
-          >
-            <ShoppingBag className="size-4" />
-            <span className="hidden sm:inline">Bag</span>
-            <span className="absolute -top-2 right-0 translate-x-1/2 flex size-5 items-center justify-center rounded-full bg-gold text-[0.65rem] text-gold-foreground">
-              {count}
-            </span>
-          </Link>
-          <button
-            className="xl:hidden"
-            onClick={() => setOpen((v) => !v)}
-            aria-label="Toggle menu"
-            aria-expanded={open}
-          >
-            {open ? <X className="size-5" /> : <Menu className="size-5" />}
-          </button>
         </div>
-      </div>
+      </nav>
 
-      <div className="border-t border-border px-5 pb-3 pt-3 md:hidden">
-        <SearchBar />
-      </div>
-
+      {/* Mobile menu */}
       {open && (
-        <nav className="border-t border-border bg-background px-5 py-4 xl:hidden" aria-label="Mobile">
-
+        <nav className="border-t border-border bg-background px-4 py-4 xl:hidden" aria-label="Mobile">
           {nav.map((item) => (
             <Link
               key={item.label}
