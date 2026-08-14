@@ -281,11 +281,13 @@ export function SiteHeader() {
         </div>
       </div>
 
+      <div className="border-t border-border px-5 pb-3 pt-3 md:hidden">
+        <SearchBar />
+      </div>
+
       {open && (
         <nav className="border-t border-border bg-background px-5 py-4 xl:hidden" aria-label="Mobile">
-          <div className="md:hidden">
-            <SearchBar onDone={() => setOpen(false)} />
-          </div>
+
           {nav.map((item) => (
             <Link
               key={item.label}
