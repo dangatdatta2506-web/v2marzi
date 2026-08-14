@@ -188,9 +188,10 @@ export function SiteHeader() {
           MARZI
         </Link>
 
-        <div className="hidden max-w-sm flex-1 md:block">
+        <div className="hidden min-w-0 flex-1 md:block md:max-w-xl lg:max-w-2xl xl:max-w-3xl">
           <SearchBar />
         </div>
+
 
         <nav className="hidden items-center gap-7 xl:flex" aria-label="Main">
           {nav.map((item) => (
@@ -280,11 +281,13 @@ export function SiteHeader() {
         </div>
       </div>
 
+      <div className="border-t border-border px-5 pb-3 pt-3 md:hidden">
+        <SearchBar />
+      </div>
+
       {open && (
         <nav className="border-t border-border bg-background px-5 py-4 xl:hidden" aria-label="Mobile">
-          <div className="md:hidden">
-            <SearchBar onDone={() => setOpen(false)} />
-          </div>
+
           {nav.map((item) => (
             <Link
               key={item.label}
