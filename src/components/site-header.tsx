@@ -59,7 +59,7 @@ function SearchBar({ onDone }: { onDone?: () => void }) {
         className="h-12 w-full border border-border bg-background pl-10 pr-4 text-sm outline-none transition-colors focus:border-gold"
       />
       {open && results.length > 0 && (
-        <ul className="absolute left-0 right-0 top-13 z-50 max-h-80 overflow-auto border border-border bg-background shadow-lg">
+        <ul className="absolute left-0 right-0 top-[3.25rem] z-50 max-h-80 overflow-auto border border-border bg-background shadow-lg">
           {results.map((p) => (
             <li key={p.slug}>
               <Link
@@ -85,7 +85,7 @@ function SearchBar({ onDone }: { onDone?: () => void }) {
         </ul>
       )}
       {open && term.trim().length >= 2 && results.length === 0 && (
-        <p className="absolute left-0 right-0 top-13 z-50 border border-border bg-background px-4 py-3 text-xs text-muted-foreground">
+        <p className="absolute left-0 right-0 top-[3.25rem] z-50 border border-border bg-background px-4 py-3 text-xs text-muted-foreground">
           Nothing matches “{term.trim()}”.
         </p>
       )}
