@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
+import { OccasionBanner } from "@/components/occasion-banner";
 import { collectionImage, heroImage } from "@/lib/images";
 import { collections, products } from "@/lib/products";
 
