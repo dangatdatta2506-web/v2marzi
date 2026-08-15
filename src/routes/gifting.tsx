@@ -22,13 +22,17 @@ const occasions = [
   { title: "For everyday love", blurb: "Quiet classics she'll never take off.", collection: "core" },
 ] as const;
 
-type GiftSearch = { occasion?: string; max?: number; collections?: string };
+type GiftSearch = {
+  occasion?: string | undefined;
+  max?: number | undefined;
+  collections?: string | undefined;
+};
 
 export const Route = createFileRoute("/gifting")({
   validateSearch: (search: Record<string, unknown>): GiftSearch => ({
-    occasion: typeof search.occasion === "string" ? search.occasion : undefined,
-    max: Number(search.max) > 0 ? Number(search.max) : undefined,
-    collections: typeof search.collections === "string" ? search.collections : undefined,
+    occasion: typeof search["occasion"] === "string" ? search["occasion"] : undefined,
+    max: Number(search["max"]) > 0 ? Number(search["max"]) : undefined,
+    collections: typeof search["collections"] === "string" ? search["collections"] : undefined,
   }),
   head: () => ({
     meta: [
