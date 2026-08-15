@@ -86,6 +86,9 @@ function Home() {
         </div>
       </section>
 
+      {/* Occasion banner */}
+      <OccasionBanner />
+
       {/* Assurance bar */}
       <div className="border-b border-border bg-sand">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-x-12 gap-y-3 px-5 py-5 sm:px-8">
