@@ -30,12 +30,12 @@ function WishlistPage() {
   const saved = catalog.filter((p) => wishlist.includes(p.slug));
 
   return (
-    <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+    <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8">
       <p className="eyebrow">Saved for later</p>
       <h1 className="mt-4 font-display text-5xl">Your wishlist</h1>
 
       {saved.length === 0 ? (
-        <div className="mt-14 border border-border py-24 text-center">
+        <div className="mt-14 border border-border py-14 sm:py-24 text-center">
           <p className="text-sm text-muted-foreground">Nothing saved yet.</p>
           <Link
             to="/shop/$collection"

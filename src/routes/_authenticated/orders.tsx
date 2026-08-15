@@ -39,14 +39,14 @@ function OrdersPage() {
   });
 
   return (
-    <div className="mx-auto max-w-4xl px-5 py-20 sm:px-8">
+    <div className="mx-auto max-w-4xl px-5 py-12 sm:py-20 sm:px-8">
       <p className="eyebrow">Order history</p>
       <h1 className="mt-4 font-display text-5xl">Your orders</h1>
 
       {isLoading && <p className="mt-10 text-sm text-muted-foreground">Loading your orders…</p>}
 
       {!isLoading && (data?.length ?? 0) === 0 && (
-        <div className="mt-12 border border-border py-20 text-center">
+        <div className="mt-12 border border-border py-12 sm:py-20 text-center">
           <p className="text-sm text-muted-foreground">You haven't placed an order yet.</p>
           <Link
             to="/shop/$collection"

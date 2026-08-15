@@ -71,7 +71,7 @@ function AdminPage() {
   const status = useQuery({ queryKey: ["admin-status"], queryFn: () => getAdminStatus() });
 
   if (loading || status.isLoading) {
-    return <div className="mx-auto max-w-6xl px-5 py-20 text-sm">Loading…</div>;
+    return <div className="mx-auto max-w-6xl px-5 py-12 sm:py-20 text-sm">Loading…</div>;
   }
 
   if (!status.data?.isStaff) {
@@ -96,7 +96,7 @@ function AdminPage() {
   const activeTab = tabs.includes(tab) ? tab : tabs[0]!;
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+    <div className="mx-auto max-w-6xl px-5 py-10 sm:py-16 sm:px-8">
       <p className="eyebrow">Marzi control room</p>
       <h1 className="mt-4 font-display text-5xl">
         {isAdmin ? "Admin dashboard" : "Operator dashboard"}
@@ -436,7 +436,7 @@ function TwoFactorGate({ email, onVerified }: { email: string | null; onVerified
   });
 
   return (
-    <div className="mx-auto max-w-md px-5 py-24 sm:px-8">
+    <div className="mx-auto max-w-md px-5 py-14 sm:py-24 sm:px-8">
       <p className="eyebrow">Two-step verification</p>
       <h1 className="mt-4 font-display text-5xl">Confirm it's you</h1>
       <p className="mt-3 text-sm text-muted-foreground">

@@ -24,7 +24,7 @@ export const Route = createFileRoute("/about")({
 
 function AboutPage() {
   return (
-    <div className="mx-auto max-w-5xl px-5 py-20 sm:px-8">
+    <div className="mx-auto max-w-5xl px-5 py-12 sm:py-20 sm:px-8">
       <p className="eyebrow">Our story</p>
       <h1 className="mt-4 max-w-3xl font-display text-5xl leading-tight sm:text-6xl">
         Jewelry that keeps pace with the woman wearing it.

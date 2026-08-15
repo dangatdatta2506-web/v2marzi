@@ -136,7 +136,7 @@ function AuthPage() {
           : "Sign in";
 
   return (
-    <div className="mx-auto max-w-md px-5 py-20 sm:px-8">
+    <div className="mx-auto max-w-md px-5 py-12 sm:py-20 sm:px-8">
       <p className="eyebrow">Marzi account</p>
       <h1 className="mt-4 font-display text-5xl">{heading}</h1>
       <p className="mt-3 text-sm text-muted-foreground">

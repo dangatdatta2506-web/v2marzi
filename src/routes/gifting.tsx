@@ -47,7 +47,7 @@ function GiftingPage() {
   const list = catalog.filter((p) => active.test(p.price));
 
   return (
-    <div className="mx-auto max-w-7xl px-5 py-16 sm:px-8">
+    <div className="mx-auto max-w-7xl px-5 py-10 sm:py-16 sm:px-8">
       <nav className="text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
         <Link to="/" className="hover:text-foreground">
           Home
