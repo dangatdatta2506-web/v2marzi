@@ -57,7 +57,7 @@ function Home() {
           className="ken-burns absolute inset-0 -z-10 size-full object-cover"
         />
         <div className="absolute inset-0 -z-10 bg-[oklch(0.24_0.03_45_/_0.55)]" />
-        <div className="fade-up mx-auto max-w-3xl px-6 py-24 text-center">
+        <div className="fade-up mx-auto max-w-3xl px-6 py-14 sm:py-24 text-center">
           <p className="text-[0.72rem] uppercase tracking-[0.28em] text-[oklch(0.82_0.09_80)]">
             Made in India, worn everywhere
           </p>
@@ -98,7 +98,7 @@ function Home() {
       </div>
 
       {/* Promises */}
-      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-20 sm:px-8 md:grid-cols-3">
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:py-20 sm:px-8 md:grid-cols-3">
         {[
           ["Long-lasting", "Triple-layer 18K plating that survives sweat, sun and saltwater."],
           ["Waterproof", "Shower, swim, repeat. Tested for 12 months of daily wear."],
@@ -150,7 +150,7 @@ function Home() {
       <Shelf title="New arrivals" eyebrow="Just landed" items={newArrivals} />
 
       {/* Promo banner */}
-      <section className="my-20 bg-primary px-5 py-20 text-center sm:px-8">
+      <section className="my-20 bg-primary px-5 py-12 sm:py-20 text-center sm:px-8">
         <p className="text-[0.72rem] uppercase tracking-[0.28em] text-gold">Flash deal</p>
         <h2 className="mx-auto mt-5 max-w-2xl font-display text-4xl text-primary-foreground sm:text-5xl">
           20% off the Baddie edit
@@ -168,7 +168,7 @@ function Home() {
       <Shelf title="Best sellers" eyebrow="Loved most" items={bestSellers} />
 
       {/* Reviews */}
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8">
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <div className="text-center">
           <p className="eyebrow">Customer reviews</p>
           <h2 className="mt-3 font-display text-4xl">4.9 from 1,200+ women</h2>

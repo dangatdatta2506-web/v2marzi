@@ -21,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/addresses")({
 
 function AddressesPage() {
   return (
-    <div className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
+    <div className="mx-auto max-w-3xl px-5 py-10 sm:py-16 sm:px-8">
       <p className="eyebrow">Marzi account</p>
       <h1 className="mt-4 font-display text-5xl">Saved addresses</h1>
       <p className="mt-3 text-sm text-muted-foreground">

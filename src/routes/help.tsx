@@ -84,7 +84,7 @@ function HelpPage() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   return (
-    <div className="mx-auto max-w-3xl px-5 py-16 sm:px-8">
+    <div className="mx-auto max-w-3xl px-5 py-10 sm:py-16 sm:px-8">
       <p className="eyebrow">Help &amp; support</p>
       <h1 className="mt-4 font-display text-5xl">We're here for you</h1>
       <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
