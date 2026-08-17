@@ -43,8 +43,12 @@ const reviews = [
 ];
 
 function Home() {
-  const newArrivals = products.filter((p) => p.badge === "New");
-  const bestSellers = products.filter((p) => p.badge === "Best Seller");
+  const fill = (primary: typeof products, count = 8) => {
+    const rest = products.filter((p) => !primary.includes(p));
+    return [...primary, ...rest].slice(0, count);
+  };
+  const newArrivals = fill(products.filter((p) => p.badge === "New"));
+  const bestSellers = fill(products.filter((p) => p.badge === "Best Seller"));
 
   return (
     <>
@@ -175,7 +179,7 @@ function Home() {
       <section className="mx-auto max-w-7xl px-5 py-12 sm:py-20 sm:px-8">
         <div className="text-center">
           <p className="eyebrow">Customer reviews</p>
-          <h2 className="mt-3 font-display text-4xl">4.9 from 1,200+ women</h2>
+          <h2 className="mt-3 font-display text-4xl">What Our Early Customers Say</h2>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
           {reviews.map((r) => (
@@ -191,6 +195,17 @@ function Home() {
               </figcaption>
             </figure>
           ))}
+        </div>
+
+        {/* TODO: replace this placeholder with the verified review widget embed
+            (Judge.me / Trustpilot). Drop the provider script in __root.tsx head
+            and swap this block for the widget container div. */}
+        <div className="mt-10 border border-dashed border-border bg-card/50 px-6 py-10 text-center">
+          <p className="eyebrow">Verified reviews</p>
+          <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-muted-foreground">
+            Independently verified customer reviews will appear here once our third-party review
+            widget is connected.
+          </p>
         </div>
       </section>
     </>
@@ -222,7 +237,7 @@ function Shelf({
           View all
         </Link>
       </div>
-      <div className="mt-10 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 grid gap-x-6 gap-y-12 grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {items.map((p) => (
           <ProductCard key={p.slug} product={p} />
         ))}
