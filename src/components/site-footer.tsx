@@ -41,7 +41,7 @@ export function SiteFooter() {
 
   return (
     <footer className="mt-24 border-t border-border bg-sand">
-      <div className="mx-auto grid max-w-7xl gap-12 px-5 py-10 sm:py-16 sm:px-8 md:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-12 px-5 py-10 sm:py-16 sm:px-8 sm:grid-cols-2 md:grid-cols-5">
         <div className="md:col-span-2">
           <p className="font-display text-2xl tracking-[0.35em]">MARZI</p>
           <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
