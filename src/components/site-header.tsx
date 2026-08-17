@@ -98,6 +98,27 @@ function PincodeCheck() {
   const [pin, setPin] = useState("");
   const [result, setResult] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const isMobile = useIsMobile();
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Desktop: close automatically when clicking outside or pressing Escape.
+  // Mobile: stays open until the user taps the button again.
+  useEffect(() => {
+    if (isMobile || !open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isMobile, open]);
+
 
   async function check() {
     if (!/^\d{6}$/.test(pin)) {
