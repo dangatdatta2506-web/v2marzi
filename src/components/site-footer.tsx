@@ -24,7 +24,16 @@ const columns: { title: string; links: FooterLink[] }[] = [
       { to: "/cart", label: "Your bag" },
     ],
   },
+  {
+    title: "Legal",
+    links: [
+      { to: "/privacy", label: "Privacy Policy" },
+      { to: "/terms", label: "Terms of Service" },
+      { to: "/returns", label: "Return & Refund Policy" },
+    ],
+  },
 ];
+
 
 
 export function SiteFooter() {
