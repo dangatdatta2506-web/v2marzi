@@ -18,6 +18,7 @@ import { Route as CartRouteImport } from './routes/cart'
 import { Route as GiftingRouteImport } from './routes/gifting'
 import { Route as HelpRouteImport } from './routes/help'
 import { Route as NewArrivalsRouteImport } from './routes/new-arrivals'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as WishlistRouteImport } from './routes/wishlist'
 import { Route as AuthenticatedAddressesRouteImport } from './routes/_authenticated/addresses'
@@ -70,6 +71,11 @@ const NewArrivalsRoute = NewArrivalsRouteImport.update({
   path: '/new-arrivals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
@@ -115,6 +121,7 @@ export interface FileRoutesByFullPath {
   '/gifting': typeof GiftingRoute
   '/help': typeof HelpRoute
   '/new-arrivals': typeof NewArrivalsRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/wishlist': typeof WishlistRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -132,6 +139,7 @@ export interface FileRoutesByTo {
   '/gifting': typeof GiftingRoute
   '/help': typeof HelpRoute
   '/new-arrivals': typeof NewArrivalsRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/wishlist': typeof WishlistRoute
   '/addresses': typeof AuthenticatedAddressesRoute
@@ -151,6 +159,7 @@ export interface FileRoutesById {
   '/gifting': typeof GiftingRoute
   '/help': typeof HelpRoute
   '/new-arrivals': typeof NewArrivalsRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/wishlist': typeof WishlistRoute
   '/_authenticated/addresses': typeof AuthenticatedAddressesRoute
@@ -170,6 +179,7 @@ export interface FileRouteTypes {
     | '/gifting'
     | '/help'
     | '/new-arrivals'
+    | '/privacy'
     | '/reset-password'
     | '/wishlist'
     | '/addresses'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/gifting'
     | '/help'
     | '/new-arrivals'
+    | '/privacy'
     | '/reset-password'
     | '/wishlist'
     | '/addresses'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/gifting'
     | '/help'
     | '/new-arrivals'
+    | '/privacy'
     | '/reset-password'
     | '/wishlist'
     | '/_authenticated/addresses'
@@ -224,6 +236,7 @@ export interface RootRouteChildren {
   GiftingRoute: typeof GiftingRoute
   HelpRoute: typeof HelpRoute
   NewArrivalsRoute: typeof NewArrivalsRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   WishlistRoute: typeof WishlistRoute
   ProductSlugRoute: typeof ProductSlugRoute
@@ -293,6 +306,13 @@ declare module '@tanstack/react-router' {
       path: '/new-arrivals'
       fullPath: '/new-arrivals'
       preLoaderRoute: typeof NewArrivalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reset-password': {
@@ -372,6 +392,7 @@ const rootRouteChildren: RootRouteChildren = {
   GiftingRoute: GiftingRoute,
   HelpRoute: HelpRoute,
   NewArrivalsRoute: NewArrivalsRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   WishlistRoute: WishlistRoute,
   ProductSlugRoute: ProductSlugRoute,
