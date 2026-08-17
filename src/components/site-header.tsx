@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, LogOut, MapPin, Menu, Moon, Search, ShoppingBag, Sun, User, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useShop, useTheme } from "@/lib/store";
 import { useAuth } from "@/hooks/use-auth";
@@ -98,6 +99,27 @@ function PincodeCheck() {
   const [pin, setPin] = useState("");
   const [result, setResult] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const isMobile = useIsMobile();
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  // Desktop: close automatically when clicking outside or pressing Escape.
+  // Mobile: stays open until the user taps the button again.
+  useEffect(() => {
+    if (isMobile || !open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [isMobile, open]);
+
 
   async function check() {
     if (!/^\d{6}$/.test(pin)) {
@@ -120,7 +142,7 @@ function PincodeCheck() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={wrapRef}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
