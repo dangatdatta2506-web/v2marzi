@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Heart, LogOut, MapPin, Menu, Moon, Search, ShoppingBag, Sun, User, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useShop, useTheme } from "@/lib/store";
 import { useAuth } from "@/hooks/use-auth";
@@ -141,7 +142,7 @@ function PincodeCheck() {
   }
 
   return (
-    <div className="relative">
+    <div className="relative" ref={wrapRef}>
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
