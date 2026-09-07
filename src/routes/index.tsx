@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Star } from "lucide-react";
 import { ProductCard } from "@/components/product-card";
 import { OccasionBanner } from "@/components/occasion-banner";
+import { HeroTrustRow } from "@/components/hero-trust";
+import { VerticalVideoRail } from "@/components/vertical-video-rail";
 import { collectionImage, heroImage } from "@/lib/images";
 import { collections, products } from "@/lib/products";
 
@@ -174,6 +176,9 @@ function Home() {
           Shop the drop
         </Link>
       </section>
+
+      {/* Video rail */}
+      <VerticalVideoRail />
 
       {/* Best sellers */}
       <Shelf title="Best sellers" eyebrow="Loved most" items={bestSellers} />
