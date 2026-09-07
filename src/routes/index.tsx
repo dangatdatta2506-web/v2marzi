@@ -91,6 +91,9 @@ function Home() {
         </div>
       </section>
 
+      {/* Trust signals */}
+      <HeroTrustRow />
+
       {/* Occasion banner */}
       <OccasionBanner />
 
