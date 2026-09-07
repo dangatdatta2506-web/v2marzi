@@ -296,6 +296,60 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_banners: {
+        Row: {
+          blurb: string
+          countdown_from_days: number
+          created_at: string
+          cta_label: string
+          enabled: boolean
+          end_date: string
+          eyebrow: string
+          headline: string
+          id: string
+          max_price: number
+          name: string
+          show_countdown: boolean
+          sort_order: number
+          target_collections: string[]
+          updated_at: string
+        }
+        Insert: {
+          blurb?: string
+          countdown_from_days?: number
+          created_at?: string
+          cta_label?: string
+          enabled?: boolean
+          end_date: string
+          eyebrow?: string
+          headline?: string
+          id?: string
+          max_price?: number
+          name?: string
+          show_countdown?: boolean
+          sort_order?: number
+          target_collections?: string[]
+          updated_at?: string
+        }
+        Update: {
+          blurb?: string
+          countdown_from_days?: number
+          created_at?: string
+          cta_label?: string
+          enabled?: boolean
+          end_date?: string
+          eyebrow?: string
+          headline?: string
+          id?: string
+          max_price?: number
+          name?: string
+          show_countdown?: boolean
+          sort_order?: number
+          target_collections?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           approved: boolean
@@ -410,6 +464,48 @@ export type Database = {
           user_id?: string | null
           value?: number
           visitor_id?: string
+        }
+        Relationships: []
+      }
+      site_videos: {
+        Row: {
+          active: boolean
+          aspect_ratio: string
+          caption: string
+          created_at: string
+          id: string
+          product_slug: string | null
+          sort_order: number
+          source_url: string
+          thumbnail_url: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          aspect_ratio?: string
+          caption?: string
+          created_at?: string
+          id?: string
+          product_slug?: string | null
+          sort_order?: number
+          source_url: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          aspect_ratio?: string
+          caption?: string
+          created_at?: string
+          id?: string
+          product_slug?: string | null
+          sort_order?: number
+          source_url?: string
+          thumbnail_url?: string | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
