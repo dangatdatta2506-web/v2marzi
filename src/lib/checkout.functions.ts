@@ -54,7 +54,7 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
     const coupon = deal?.code ?? null;
     const discount = deal ? Math.round((subtotal * deal.discountPercent) / 100) : 0;
 
-    const shipping = subtotal > 1999 ? 0 : 149;
+    const shipping = subtotal >= 1999 ? 0 : 149;
     const tax = Math.round((subtotal - discount) * 0.03);
     const total = Math.max(0, subtotal - discount) + shipping + tax;
 
