@@ -103,7 +103,7 @@ function Home() {
       <HeroTrustRow />
 
       {/* Occasion banner */}
-      <OccasionBanner />
+      <OccasionBanner config={bannerConfig} />
 
       {/* Assurance bar */}
       <div className="border-b border-border bg-sand">
@@ -196,17 +196,38 @@ function Home() {
           <h2 className="mt-3 font-display text-4xl">What Our Early Customers Say</h2>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {reviews.map((r) => (
-            <figure key={r.name} className="border border-border bg-card p-8">
-              <div className="flex gap-1 text-gold" aria-label="5 out of 5 stars">
+          {homeReviews.map((r) => (
+            <figure key={r.id} className="border border-border bg-card p-8">
+              <div
+                className="flex gap-1 text-gold"
+                aria-label={`${r.rating} out of 5 stars`}
+              >
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="size-4 fill-gold" />
+                  <Star
+                    key={i}
+                    className={cn("size-4", i < Math.round(r.rating) ? "fill-gold" : "fill-border")}
+                  />
                 ))}
               </div>
-              <blockquote className="mt-5 font-display text-xl leading-snug">"{r.text}"</blockquote>
+              {r.title && (
+                <p className="mt-4 text-[0.7rem] uppercase tracking-[0.16em] text-foreground">
+                  {r.title}
+                </p>
+              )}
+              <blockquote className="mt-4 font-display text-xl leading-snug">"{r.text}"</blockquote>
               <figcaption className="mt-5 text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
-                {r.name} — Verified purchase
+                {r.name}
+                {r.verified ? " — Verified purchase" : ""}
               </figcaption>
+              {r.slug && (
+                <Link
+                  to="/product/$slug"
+                  params={{ slug: r.slug }}
+                  className="mt-2 inline-block text-[0.66rem] uppercase tracking-[0.16em] text-gold hover:underline"
+                >
+                  View product
+                </Link>
+              )}
             </figure>
           ))}
         </div>
