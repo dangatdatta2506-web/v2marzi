@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/product-card";
 import { OccasionBanner, OCCASION } from "@/components/occasion-banner";
 import { HeroTrustRow } from "@/components/hero-trust";
@@ -51,6 +52,26 @@ function Home() {
   const { data: banners } = useQuery({ queryKey: ["home-banners"], queryFn: () => listActiveBanners() });
   const { data: dbReviews } = useQuery({ queryKey: ["home-reviews"], queryFn: () => listHomeReviews() });
   const bannerConfig = banners?.length ? bannerToConfig(banners[0]!) : OCCASION;
+  const homeReviews =
+    dbReviews && dbReviews.length
+      ? dbReviews.map((r) => ({
+          id: r.id,
+          name: r.authorName,
+          rating: r.rating,
+          title: r.title,
+          text: r.body,
+          verified: r.verifiedPurchase,
+          slug: r.productSlug,
+        }))
+      : reviewsFallback.map((r, i) => ({
+          id: `fallback-${i}`,
+          name: r.name,
+          rating: 5,
+          title: "",
+          text: r.text,
+          verified: true,
+          slug: null as string | null,
+        }));
   const fill = (primary: typeof products, count = 8) => {
     const rest = products.filter((p) => !primary.includes(p));
     return [...primary, ...rest].slice(0, count);
