@@ -12,15 +12,23 @@ import {
 } from "@/lib/reviews.functions";
 import { downloadInvoice, type InvoiceOrder } from "@/lib/invoice";
 import {
+  adminDeleteBanner,
   adminDeleteDeal,
   adminDeleteProduct,
+  adminDeleteVideo,
+  adminListBanners,
   adminListDeals,
   adminListOrders,
   adminListProducts,
+  adminListVideos,
+  type AdminBanner,
+  type AdminVideo,
   adminProductPerformance,
   adminRevenueBreakdown,
+  adminSaveBanner,
   adminSaveDeal,
   adminSaveProduct,
+  adminSaveVideo,
   adminSetStock,
   adminUpdateOrderStatus,
   getAdminStatus,
@@ -62,7 +70,16 @@ export const Route = createFileRoute("/_authenticated/admin")({
 type OrderItem = { slug: string; name: string; price: number; qty: number };
 const statuses = ["pending", "confirmed", "packed", "shipped", "delivered", "cancelled"] as const;
 type Status = (typeof statuses)[number];
-type Tab = "insights" | "orders" | "products" | "reviews" | "pincodes" | "deals" | "users";
+type Tab =
+  | "insights"
+  | "orders"
+  | "products"
+  | "reviews"
+  | "pincodes"
+  | "deals"
+  | "banners"
+  | "videos"
+  | "users";
 
 function AdminPage() {
   const { loading } = useAuth();
@@ -91,7 +108,7 @@ function AdminPage() {
 
   const isAdmin = status.data.isAdmin;
   const tabs: Tab[] = isAdmin
-    ? ["insights", "orders", "products", "reviews", "pincodes", "deals", "users"]
+    ? ["insights", "orders", "products", "reviews", "pincodes", "deals", "banners", "videos", "users"]
     : ["orders", "products", "reviews", "pincodes"];
   const activeTab = tabs.includes(tab) ? tab : tabs[0]!;
 
@@ -124,6 +141,8 @@ function AdminPage() {
       {activeTab === "reviews" && <ReviewsPanel />}
       {activeTab === "pincodes" && <PincodesPanel />}
       {activeTab === "deals" && <DealsPanel />}
+      {activeTab === "banners" && <BannersPanel />}
+      {activeTab === "videos" && <VideosPanel />}
       {activeTab === "users" && <UsersPanel />}
 
     </div>

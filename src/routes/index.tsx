@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Star } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { ProductCard } from "@/components/product-card";
-import { OccasionBanner } from "@/components/occasion-banner";
+import { OccasionBanner, OCCASION } from "@/components/occasion-banner";
 import { HeroTrustRow } from "@/components/hero-trust";
 import { VerticalVideoRail } from "@/components/vertical-video-rail";
+import { bannerToConfig, listActiveBanners, listHomeReviews } from "@/lib/content.functions";
 import { collectionImage, heroImage } from "@/lib/images";
 import { collections, products } from "@/lib/products";
 
@@ -35,7 +38,7 @@ const marquee = [
   "7-day easy returns",
 ];
 
-const reviews = [
+const reviewsFallback = [
   {
     name: "Ananya R.",
     text: "Wore the Aurelia locket through monsoon, gym and a wedding. Still looks brand new.",
@@ -45,6 +48,30 @@ const reviews = [
 ];
 
 function Home() {
+  // Admin-managed content: banner from /admin → Banners, videos from /admin → Videos.
+  const { data: banners } = useQuery({ queryKey: ["home-banners"], queryFn: () => listActiveBanners() });
+  const { data: dbReviews } = useQuery({ queryKey: ["home-reviews"], queryFn: () => listHomeReviews() });
+  const bannerConfig = banners?.length ? bannerToConfig(banners[0]!) : OCCASION;
+  const homeReviews =
+    dbReviews && dbReviews.length
+      ? dbReviews.map((r) => ({
+          id: r.id,
+          name: r.authorName,
+          rating: r.rating,
+          title: r.title,
+          text: r.body,
+          verified: r.verifiedPurchase,
+          slug: r.productSlug,
+        }))
+      : reviewsFallback.map((r, i) => ({
+          id: `fallback-${i}`,
+          name: r.name,
+          rating: 5,
+          title: "",
+          text: r.text,
+          verified: true,
+          slug: null as string | null,
+        }));
   const fill = (primary: typeof products, count = 8) => {
     const rest = products.filter((p) => !primary.includes(p));
     return [...primary, ...rest].slice(0, count);
@@ -97,7 +124,7 @@ function Home() {
       <HeroTrustRow />
 
       {/* Occasion banner */}
-      <OccasionBanner />
+      <OccasionBanner config={bannerConfig} />
 
       {/* Assurance bar */}
       <div className="border-b border-border bg-sand">
@@ -190,17 +217,38 @@ function Home() {
           <h2 className="mt-3 font-display text-4xl">What Our Early Customers Say</h2>
         </div>
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {reviews.map((r) => (
-            <figure key={r.name} className="border border-border bg-card p-8">
-              <div className="flex gap-1 text-gold" aria-label="5 out of 5 stars">
+          {homeReviews.map((r) => (
+            <figure key={r.id} className="border border-border bg-card p-8">
+              <div
+                className="flex gap-1 text-gold"
+                aria-label={`${r.rating} out of 5 stars`}
+              >
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="size-4 fill-gold" />
+                  <Star
+                    key={i}
+                    className={cn("size-4", i < Math.round(r.rating) ? "fill-gold" : "fill-border")}
+                  />
                 ))}
               </div>
-              <blockquote className="mt-5 font-display text-xl leading-snug">"{r.text}"</blockquote>
+              {r.title && (
+                <p className="mt-4 text-[0.7rem] uppercase tracking-[0.16em] text-foreground">
+                  {r.title}
+                </p>
+              )}
+              <blockquote className="mt-4 font-display text-xl leading-snug">"{r.text}"</blockquote>
               <figcaption className="mt-5 text-[0.7rem] uppercase tracking-[0.18em] text-muted-foreground">
-                {r.name} — Verified purchase
+                {r.name}
+                {r.verified ? " — Verified purchase" : ""}
               </figcaption>
+              {r.slug && (
+                <Link
+                  to="/product/$slug"
+                  params={{ slug: r.slug }}
+                  className="mt-2 inline-block text-[0.66rem] uppercase tracking-[0.16em] text-gold hover:underline"
+                >
+                  View product
+                </Link>
+              )}
             </figure>
           ))}
         </div>

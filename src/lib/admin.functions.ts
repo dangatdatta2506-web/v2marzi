@@ -364,3 +364,154 @@ export const adminRevenueBreakdown = createServerFn({ method: "GET" })
       failed: list.find((s) => s.status === "failed")?.amount ?? 0,
     };
   });
+
+/* ------------ promo banners ------------ */
+
+const bannerSchema = z.object({
+  id: z.string().uuid().optional(),
+  name: z.string().trim().min(2).max(80),
+  enabled: z.boolean().default(true),
+  endDate: z.string().trim().regex(/^\d{4}-\d{2}-\d{2}$/, "Use YYYY-MM-DD"),
+  eyebrow: z.string().trim().max(120).default(""),
+  headline: z.string().trim().min(2).max(200),
+  blurb: z.string().trim().max(400).default(""),
+  ctaLabel: z.string().trim().min(2).max(60),
+  showCountdown: z.boolean().default(true),
+  countdownFromDays: z.number().int().min(1).max(90).default(30),
+  maxPrice: z.number().int().min(0).max(10_000_000).default(3000),
+  collections: z.array(z.enum(["core", "baddie", "corporate"])).min(1).max(3).default(["core"]),
+  sortOrder: z.number().int().min(0).max(100).default(0),
+});
+
+export type AdminBanner = {
+  id: string;
+  name: string;
+  enabled: boolean;
+  end_date: string;
+  eyebrow: string;
+  headline: string;
+  blurb: string;
+  cta_label: string;
+  show_countdown: boolean;
+  countdown_from_days: number;
+  max_price: number;
+  target_collections: string[];
+  sort_order: number;
+};
+
+export const adminListBanners = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdminWith2fa(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const { data, error } = await context.supabase
+      .from("promo_banners")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as AdminBanner[];
+  });
+
+export const adminSaveBanner = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => bannerSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdminWith2fa(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const row = {
+      name: data.name,
+      enabled: data.enabled,
+      end_date: data.endDate,
+      eyebrow: data.eyebrow,
+      headline: data.headline,
+      blurb: data.blurb,
+      cta_label: data.ctaLabel,
+      show_countdown: data.showCountdown,
+      countdown_from_days: data.countdownFromDays,
+      max_price: data.maxPrice,
+      target_collections: data.collections,
+      sort_order: data.sortOrder,
+    };
+    const query = data.id
+      ? context.supabase.from("promo_banners").update(row).eq("id", data.id)
+      : context.supabase.from("promo_banners").insert(row);
+    const { error } = await query;
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const adminDeleteBanner = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdminWith2fa(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const { error } = await context.supabase.from("promo_banners").delete().eq("id", data.id);
+    if (error) throw error;
+    return { ok: true };
+  });
+
+/* ------------ site videos ------------ */
+
+const videoSchema = z.object({
+  id: z.string().uuid().optional(),
+  title: z.string().trim().min(2).max(120),
+  caption: z.string().trim().max(200).default(""),
+  sourceUrl: z.string().trim().min(5).max(600),
+  thumbnailUrl: z.string().trim().max(600).nullable().optional(),
+  productSlug: z.string().trim().max(80).nullable().optional(),
+  active: z.boolean().default(true),
+  sortOrder: z.number().int().min(0).max(100).default(0),
+});
+
+export type AdminVideo = {
+  id: string;
+  title: string;
+  caption: string;
+  source_url: string;
+  thumbnail_url: string | null;
+  product_slug: string | null;
+  active: boolean;
+  sort_order: number;
+};
+
+export const adminListVideos = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertAdminWith2fa(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const { data, error } = await context.supabase
+      .from("site_videos")
+      .select("*")
+      .order("sort_order", { ascending: true });
+    if (error) throw error;
+    return (data ?? []) as AdminVideo[];
+  });
+
+export const adminSaveVideo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => videoSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdminWith2fa(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const row = {
+      title: data.title,
+      caption: data.caption,
+      source_url: data.sourceUrl,
+      thumbnail_url: data.thumbnailUrl ?? null,
+      product_slug: data.productSlug ?? null,
+      active: data.active,
+      sort_order: data.sortOrder,
+    };
+    const query = data.id
+      ? context.supabase.from("site_videos").update(row).eq("id", data.id)
+      : context.supabase.from("site_videos").insert(row);
+    const { error } = await query;
+    if (error) throw error;
+    return { ok: true };
+  });
+
+export const adminDeleteVideo = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertAdminWith2fa(context.supabase, context.userId, (context.claims as { email?: string } | null)?.email);
+    const { error } = await context.supabase.from("site_videos").delete().eq("id", data.id);
+    if (error) throw error;
+    return { ok: true };
+  });
