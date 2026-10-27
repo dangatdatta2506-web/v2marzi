@@ -1572,3 +1572,407 @@ function ReviewsPanel() {
     </div>
   );
 }
+
+/* ------------ banners (admin-managed homepage promo) ------------ */
+
+type BannerForm = {
+  id: string | null;
+  name: string;
+  enabled: boolean;
+  endDate: string;
+  eyebrow: string;
+  headline: string;
+  blurb: string;
+  ctaLabel: string;
+  showCountdown: boolean;
+  countdownFromDays: string;
+  maxPrice: string;
+  collections: string[];
+  sortOrder: string;
+};
+
+const emptyBanner: BannerForm = {
+  id: null,
+  name: "",
+  enabled: true,
+  endDate: "",
+  eyebrow: "",
+  headline: "",
+  blurb: "",
+  ctaLabel: "Shop now",
+  showCountdown: true,
+  countdownFromDays: "30",
+  maxPrice: "3000",
+  collections: ["core"],
+  sortOrder: "0",
+};
+
+const bannerCollectionLabels: { key: "core" | "baddie" | "corporate"; label: string }[] = [
+  { key: "core", label: "Core" },
+  { key: "baddie", label: "Baddie" },
+  { key: "corporate", label: "Corporate" },
+];
+
+function BannersPanel() {
+  const qc = useQueryClient();
+  const [form, setForm] = useState<BannerForm>(emptyBanner);
+  const { data } = useQuery({ queryKey: ["admin-banners"], queryFn: () => adminListBanners() });
+
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ["admin-banners"] });
+    void qc.invalidateQueries({ queryKey: ["home-banners"] });
+  };
+
+  const save = useMutation({
+    mutationFn: () =>
+      adminSaveBanner({
+        data: {
+          id: form.id ?? undefined,
+          name: form.name,
+          enabled: form.enabled,
+          endDate: form.endDate,
+          eyebrow: form.eyebrow,
+          headline: form.headline,
+          blurb: form.blurb,
+          ctaLabel: form.ctaLabel,
+          showCountdown: form.showCountdown,
+          countdownFromDays: Number(form.countdownFromDays) || 30,
+          maxPrice: Number(form.maxPrice) || 3000,
+          collections: form.collections as ("core" | "baddie" | "corporate")[],
+          sortOrder: Number(form.sortOrder) || 0,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Banner saved");
+      setForm(emptyBanner);
+      invalidate();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save banner"),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => adminDeleteBanner({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Banner removed");
+      invalidate();
+    },
+  });
+
+  const edit = (b: AdminBanner) =>
+    setForm({
+      id: b.id,
+      name: b.name,
+      enabled: b.enabled,
+      endDate: b.end_date,
+      eyebrow: b.eyebrow,
+      headline: b.headline,
+      blurb: b.blurb,
+      ctaLabel: b.cta_label,
+      showCountdown: b.show_countdown,
+      countdownFromDays: String(b.countdown_from_days),
+      maxPrice: String(b.max_price),
+      collections: b.target_collections ?? [],
+      sortOrder: String(b.sort_order),
+    });
+
+  const field = (key: keyof BannerForm, label: string, type = "text") => (
+    <div>
+      <label htmlFor={`b-${key}`} className="eyebrow block">
+        {label}
+      </label>
+      <input
+        id={`b-${key}`}
+        type={type}
+        value={String(form[key] ?? "")}
+        onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+        className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+      />
+    </div>
+  );
+
+  return (
+    <div className="mt-10">
+      <div className="border border-border p-6">
+        <h2 className="font-display text-3xl">{form.id ? "Edit banner" : "New homepage banner"}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          The top enabled banner shows on the homepage with its countdown and links to the gifting
+          page filtered by price and collections.
+        </p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {field("name", "Internal name (e.g. Diwali)")}
+          {field("endDate", "Last day shown (YYYY-MM-DD)")}
+          {field("eyebrow", "Eyebrow text")}
+          {field("headline", "Headline")}
+          {field("blurb", "Description")}
+          {field("ctaLabel", "Button label")}
+          {field("maxPrice", "Gifting page max price (₹)", "number")}
+          {field("countdownFromDays", "Show countdown from days left", "number")}
+          {field("sortOrder", "Sort order (lower first)", "number")}
+        </div>
+        <div className="mt-4 flex flex-wrap gap-6 text-sm">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={form.enabled}
+              onChange={(e) => setForm((f) => ({ ...f, enabled: e.target.checked }))}
+            />
+            Enabled
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={form.showCountdown}
+              onChange={(e) => setForm((f) => ({ ...f, showCountdown: e.target.checked }))}
+            />
+            Show countdown
+          </label>
+          {bannerCollectionLabels.map((c) => (
+            <label key={c.key} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={form.collections.includes(c.key)}
+                onChange={() =>
+                  setForm((f) => ({
+                    ...f,
+                    collections: f.collections.includes(c.key)
+                      ? f.collections.filter((x) => x !== c.key)
+                      : [...f.collections, c.key],
+                  }))
+                }
+              />
+              {c.label} collection
+            </label>
+          ))}
+        </div>
+        <div className="mt-6 flex gap-4">
+          <button
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+            className="bg-gold px-8 py-4 text-[0.7rem] uppercase tracking-[0.2em] text-gold-foreground disabled:opacity-60"
+          >
+            {save.isPending ? "Saving…" : form.id ? "Update banner" : "Save banner"}
+          </button>
+          {form.id && (
+            <button
+              onClick={() => setForm(emptyBanner)}
+              className="border border-border px-6 py-4 text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      </div>
+
+      <ul className="mt-10 space-y-3">
+        {(data ?? []).map((b) => (
+          <li
+            key={b.id}
+            className="flex items-start justify-between gap-6 border border-border p-5 text-sm"
+          >
+            <div>
+              <p className="font-display text-2xl">{b.headline}</p>
+              <p className="mt-1 text-muted-foreground">{b.blurb}</p>
+              <p className="mt-2 text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+                {b.name} · until {b.end_date} · {(b.target_collections ?? []).join(", ")} · under ₹
+                {b.max_price} · {b.enabled ? "enabled" : "hidden"}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-3">
+              <button
+                onClick={() => edit(b)}
+                className="border border-border px-4 py-2 text-[0.62rem] uppercase tracking-[0.14em]"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => remove.mutate(b.id)}
+                className="text-[0.62rem] uppercase tracking-[0.14em] text-destructive"
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+        {(data ?? []).length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            No banners yet — the homepage falls back to the built-in occasion banner.
+          </p>
+        )}
+      </ul>
+    </div>
+  );
+}
+
+/* ------------ videos (admin-managed homepage video rail) ------------ */
+
+type VideoForm = {
+  id: string | null;
+  title: string;
+  caption: string;
+  sourceUrl: string;
+  thumbnailUrl: string;
+  productSlug: string;
+  active: boolean;
+  sortOrder: string;
+};
+
+const emptyVideo: VideoForm = {
+  id: null,
+  title: "",
+  caption: "",
+  sourceUrl: "",
+  thumbnailUrl: "",
+  productSlug: "",
+  active: true,
+  sortOrder: "0",
+};
+
+function VideosPanel() {
+  const qc = useQueryClient();
+  const [form, setForm] = useState<VideoForm>(emptyVideo);
+  const { data } = useQuery({ queryKey: ["admin-videos"], queryFn: () => adminListVideos() });
+
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ["admin-videos"] });
+    void qc.invalidateQueries({ queryKey: ["site-videos"] });
+  };
+
+  const save = useMutation({
+    mutationFn: () =>
+      adminSaveVideo({
+        data: {
+          id: form.id ?? undefined,
+          title: form.title,
+          caption: form.caption,
+          sourceUrl: form.sourceUrl,
+          thumbnailUrl: form.thumbnailUrl || null,
+          productSlug: form.productSlug || null,
+          active: form.active,
+          sortOrder: Number(form.sortOrder) || 0,
+        },
+      }),
+    onSuccess: () => {
+      toast.success("Video saved");
+      setForm(emptyVideo);
+      invalidate();
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Could not save video"),
+  });
+
+  const remove = useMutation({
+    mutationFn: (id: string) => adminDeleteVideo({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Video removed");
+      invalidate();
+    },
+  });
+
+  const edit = (v: AdminVideo) =>
+    setForm({
+      id: v.id,
+      title: v.title,
+      caption: v.caption,
+      sourceUrl: v.source_url,
+      thumbnailUrl: v.thumbnail_url ?? "",
+      productSlug: v.product_slug ?? "",
+      active: v.active,
+      sortOrder: String(v.sort_order),
+    });
+
+  const field = (key: keyof VideoForm, label: string, type = "text") => (
+    <div>
+      <label htmlFor={`v-${key}`} className="eyebrow block">
+        {label}
+      </label>
+      <input
+        id={`v-${key}`}
+        type={type}
+        value={String(form[key] ?? "")}
+        onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
+        className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+      />
+    </div>
+  );
+
+  return (
+    <div className="mt-10">
+      <div className="border border-border p-6">
+        <h2 className="font-display text-3xl">{form.id ? "Edit video" : "Add a video"}</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Paste a direct video link (.mp4/.webm) or an Instagram Reel URL. Direct videos play inline;
+          Reel links open in a new tab.
+        </p>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          {field("title", "Title")}
+          {field("caption", "Caption below tile")}
+          {field("sourceUrl", "Video or Reel URL")}
+          {field("thumbnailUrl", "Thumbnail image URL (optional)")}
+          {field("productSlug", "Linked product slug (optional)")}
+          {field("sortOrder", "Sort order (lower first)", "number")}
+        </div>
+        <label className="mt-4 flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={form.active}
+            onChange={(e) => setForm((f) => ({ ...f, active: e.target.checked }))}
+          />
+          Show on homepage
+        </label>
+        <div className="mt-6 flex gap-4">
+          <button
+            onClick={() => save.mutate()}
+            disabled={save.isPending}
+            className="bg-gold px-8 py-4 text-[0.7rem] uppercase tracking-[0.2em] text-gold-foreground disabled:opacity-60"
+          >
+            {save.isPending ? "Saving…" : form.id ? "Update video" : "Save video"}
+          </button>
+          {form.id && (
+            <button
+              onClick={() => setForm(emptyVideo)}
+              className="border border-border px-6 py-4 text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground"
+            >
+              Cancel
+            </button>
+          )}
+        </div>
+      </div>
+
+      <ul className="mt-10 space-y-3">
+        {(data ?? []).map((v) => (
+          <li
+            key={v.id}
+            className="flex items-start justify-between gap-6 border border-border p-5 text-sm"
+          >
+            <div className="min-w-0">
+              <p className="font-display text-2xl">{v.title}</p>
+              <p className="mt-1 truncate text-muted-foreground">{v.source_url}</p>
+              <p className="mt-2 text-[0.66rem] uppercase tracking-[0.16em] text-muted-foreground">
+                {v.active ? "shown" : "hidden"} · order {v.sort_order}
+                {v.product_slug ? ` · ${v.product_slug}` : ""}
+              </p>
+            </div>
+            <div className="flex shrink-0 gap-3">
+              <button
+                onClick={() => edit(v)}
+                className="border border-border px-4 py-2 text-[0.62rem] uppercase tracking-[0.14em]"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => remove.mutate(v.id)}
+                className="text-[0.62rem] uppercase tracking-[0.14em] text-destructive"
+              >
+                Delete
+              </button>
+            </div>
+          </li>
+        ))}
+        {(data ?? []).length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            No videos yet — the homepage shows placeholder styling slots.
+          </p>
+        )}
+      </ul>
+    </div>
+  );
+}
