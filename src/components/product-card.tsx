@@ -19,7 +19,7 @@ export function ProductCard({ product }: { product: Product }) {
         onClick={() =>
           track("product_click", { productSlug: product.slug, productName: product.name })
         }
-        className="block overflow-hidden bg-secondary"
+        className="relative block overflow-hidden bg-secondary"
       >
         <img
           src={product.images?.[0] || product.imageUrl || collectionImage[product.collection]}
@@ -27,9 +27,22 @@ export function ProductCard({ product }: { product: Product }) {
           loading="lazy"
           width={1000}
           height={1000}
-          className="aspect-square w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          className={cn(
+            "aspect-square w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105",
+            product.images?.[1] && "group-hover:opacity-0",
+          )}
         />
-
+        {product.images?.[1] && (
+          <img
+            src={product.images[1]!}
+            alt=""
+            aria-hidden
+            loading="lazy"
+            width={1000}
+            height={1000}
+            className="absolute inset-0 size-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          />
+        )}
       </Link>
 
       {product.badge && (

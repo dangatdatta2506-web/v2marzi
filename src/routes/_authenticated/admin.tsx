@@ -12,15 +12,21 @@ import {
 } from "@/lib/reviews.functions";
 import { downloadInvoice, type InvoiceOrder } from "@/lib/invoice";
 import {
+  adminDeleteBanner,
   adminDeleteDeal,
   adminDeleteProduct,
+  adminDeleteVideo,
+  adminListBanners,
   adminListDeals,
   adminListOrders,
   adminListProducts,
+  adminListVideos,
   adminProductPerformance,
   adminRevenueBreakdown,
+  adminSaveBanner,
   adminSaveDeal,
   adminSaveProduct,
+  adminSaveVideo,
   adminSetStock,
   adminUpdateOrderStatus,
   getAdminStatus,
