@@ -2,9 +2,6 @@ import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 
-// Shown in the footer "last updated" badge — edit this string after each site update.
-const SITE_LAST_UPDATED = "28 October 2026";
-
 type FooterLink = { to: string; label: string; params?: Record<string, string> };
 
 const columns: { title: string; links: FooterLink[] }[] = [
