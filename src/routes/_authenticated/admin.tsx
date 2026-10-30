@@ -1943,7 +1943,38 @@ function VideosPanel() {
           {field("title", "Title")}
           {field("caption", "Caption below tile")}
           {field("sourceUrl", "Video or Reel URL")}
-          {field("thumbnailUrl", "Thumbnail image URL (optional)")}
+          <div>
+            <label htmlFor="v-thumbnailUrl" className="eyebrow block">
+              Thumbnail cover image
+            </label>
+            <input
+              id="v-thumbnailUrl"
+              type="file"
+              accept="image/*"
+              disabled={thumbBusy}
+              onChange={(e) => {
+                void uploadThumb(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
+              className="mt-2 block w-full border border-border bg-background px-3 py-2 text-sm file:mr-4 file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {thumbBusy ? "Uploading…" : "Choose a cover from your device — or paste a URL below."}
+            </p>
+            <input
+              value={form.thumbnailUrl ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, thumbnailUrl: e.target.value }))}
+              placeholder="Or paste an image URL (optional)"
+              className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+            />
+            {thumbPreview && (
+              <img
+                src={thumbPreview}
+                alt="Thumbnail preview"
+                className="mt-2 h-24 w-16 rounded border border-border object-cover"
+              />
+            )}
+          </div>
           {field("productSlug", "Linked product slug (optional)")}
           {field("sortOrder", "Sort order (lower first)", "number")}
         </div>
