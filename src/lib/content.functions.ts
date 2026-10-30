@@ -67,7 +67,7 @@ export const listActiveVideos = createServerFn({ method: "GET" }).handler(async 
     .order("sort_order", { ascending: true })
     .limit(12);
   if (error) throw error;
-  return (data ?? []).map((row) => ({
+  const videos = (data ?? []).map((row) => ({
     id: row.id,
     title: row.title,
     caption: row.caption,
@@ -75,6 +75,12 @@ export const listActiveVideos = createServerFn({ method: "GET" }).handler(async 
     thumbnailUrl: row.thumbnail_url,
     productSlug: row.product_slug,
   })) as SiteVideo[];
+  // Uploaded thumbnails live in storage as keys — swap them for long-lived signed URLs.
+  const signed = await signImageKeys(videos.map((v) => v.thumbnailUrl ?? ""));
+  return videos.map((v) => ({
+    ...v,
+    thumbnailUrl: v.thumbnailUrl ? (signed.get(v.thumbnailUrl) ?? v.thumbnailUrl) : null,
+  }));
 });
 
 /* ------------ approved customer reviews (public read) ------------ */

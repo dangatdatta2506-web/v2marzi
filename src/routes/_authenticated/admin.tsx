@@ -1936,8 +1936,8 @@ function VideosPanel() {
       <div className="border border-border p-6">
         <h2 className="font-display text-3xl">{form.id ? "Edit video" : "Add a video"}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Paste a direct video link (.mp4/.webm) or an Instagram Reel URL. Direct videos play inline;
-          Reel links open in a new tab.
+          Paste a direct video link (.mp4/.webm) or an Instagram Reel URL — both play in a popup
+          right on your site. Upload a cover image below so the tile never shows a broken thumbnail.
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {field("title", "Title")}
