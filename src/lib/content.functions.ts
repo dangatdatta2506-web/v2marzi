@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { publicClient } from "./catalog.server";
+import { publicClient, signImageKeys } from "./catalog.server";
 import type { PromoConfig } from "@/components/occasion-banner";
 
 /* ------------ promo banners (public read) ------------ */

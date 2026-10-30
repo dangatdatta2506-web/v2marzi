@@ -1831,6 +1831,43 @@ function VideosPanel() {
   const qc = useQueryClient();
   const [form, setForm] = useState<VideoForm>(emptyVideo);
   const { data } = useQuery({ queryKey: ["admin-videos"], queryFn: () => adminListVideos() });
+  const [thumbBusy, setThumbBusy] = useState(false);
+  const [thumbPreview, setThumbPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const key = form.thumbnailUrl;
+    if (!key || /^https?:\/\//i.test(key)) {
+      setThumbPreview(key || null);
+      return;
+    }
+    void (async () => {
+      const { data: signed } = await supabase.storage.from("product-images").createSignedUrls([key], 3600);
+      if (!cancelled) setThumbPreview(signed?.[0]?.signedUrl ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [form.thumbnailUrl]);
+
+  const uploadThumb = async (file: File | null) => {
+    if (!file) return;
+    setThumbBusy(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `video-thumbs/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      setForm((f) => ({ ...f, thumbnailUrl: path }));
+      toast.success("Thumbnail uploaded");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setThumbBusy(false);
+    }
+  };
 
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ["admin-videos"] });
