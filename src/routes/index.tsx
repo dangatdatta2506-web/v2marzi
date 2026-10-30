@@ -35,7 +35,6 @@ const marquee = [
   "Secure UPI checkout",
   "Pan-India delivery",
   "Corporate gifting",
-  "7-day easy returns",
 ];
 
 const reviewsFallback = [
