@@ -1831,6 +1831,43 @@ function VideosPanel() {
   const qc = useQueryClient();
   const [form, setForm] = useState<VideoForm>(emptyVideo);
   const { data } = useQuery({ queryKey: ["admin-videos"], queryFn: () => adminListVideos() });
+  const [thumbBusy, setThumbBusy] = useState(false);
+  const [thumbPreview, setThumbPreview] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const key = form.thumbnailUrl;
+    if (!key || /^https?:\/\//i.test(key)) {
+      setThumbPreview(key || null);
+      return;
+    }
+    void (async () => {
+      const { data: signed } = await supabase.storage.from("product-images").createSignedUrls([key], 3600);
+      if (!cancelled) setThumbPreview(signed?.[0]?.signedUrl ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [form.thumbnailUrl]);
+
+  const uploadThumb = async (file: File | null) => {
+    if (!file) return;
+    setThumbBusy(true);
+    try {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+      const path = `video-thumbs/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage
+        .from("product-images")
+        .upload(path, file, { cacheControl: "3600", upsert: false });
+      if (error) throw error;
+      setForm((f) => ({ ...f, thumbnailUrl: path }));
+      toast.success("Thumbnail uploaded");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Upload failed");
+    } finally {
+      setThumbBusy(false);
+    }
+  };
 
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ["admin-videos"] });
@@ -1899,14 +1936,45 @@ function VideosPanel() {
       <div className="border border-border p-6">
         <h2 className="font-display text-3xl">{form.id ? "Edit video" : "Add a video"}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          Paste a direct video link (.mp4/.webm) or an Instagram Reel URL. Direct videos play inline;
-          Reel links open in a new tab.
+          Paste a direct video link (.mp4/.webm) or an Instagram Reel URL — both play in a popup
+          right on your site. Upload a cover image below so the tile never shows a broken thumbnail.
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           {field("title", "Title")}
           {field("caption", "Caption below tile")}
           {field("sourceUrl", "Video or Reel URL")}
-          {field("thumbnailUrl", "Thumbnail image URL (optional)")}
+          <div>
+            <label htmlFor="v-thumbnailUrl" className="eyebrow block">
+              Thumbnail cover image
+            </label>
+            <input
+              id="v-thumbnailUrl"
+              type="file"
+              accept="image/*"
+              disabled={thumbBusy}
+              onChange={(e) => {
+                void uploadThumb(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
+              className="mt-2 block w-full border border-border bg-background px-3 py-2 text-sm file:mr-4 file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs"
+            />
+            <p className="mt-1 text-xs text-muted-foreground">
+              {thumbBusy ? "Uploading…" : "Choose a cover from your device — or paste a URL below."}
+            </p>
+            <input
+              value={form.thumbnailUrl ?? ""}
+              onChange={(e) => setForm((f) => ({ ...f, thumbnailUrl: e.target.value }))}
+              placeholder="Or paste an image URL (optional)"
+              className="mt-2 h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
+            />
+            {thumbPreview && (
+              <img
+                src={thumbPreview}
+                alt="Thumbnail preview"
+                className="mt-2 h-24 w-16 rounded border border-border object-cover"
+              />
+            )}
+          </div>
           {field("productSlug", "Linked product slug (optional)")}
           {field("sortOrder", "Sort order (lower first)", "number")}
         </div>
