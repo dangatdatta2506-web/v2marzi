@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Long-lasting, waterproof gold jewelry made in India. Shop the Core, Baddie and Corporate edits with secure UPI checkout and pan-India delivery.",
+          "Long-lasting, waterproof gold jewelry made in India. Shop the Core and Corporate edits with secure UPI checkout and pan-India delivery.",
       },
       { property: "og:title", content: "Marzi — Because Your Hustle Deserves a Sparkle" },
       {
@@ -141,12 +141,14 @@ function Home() {
         {[
           ["Long-lasting", "Triple-layer 18K plating that survives sweat, sun and saltwater."],
           ["Waterproof", "Shower, swim, repeat. Tested for 12 months of daily wear."],
-          ["Made in India", "Finished in small batches in Jaipur and Mumbai."],
+          ["Made in India", ""],
         ].map(([title, body]) => (
           <div key={title} className="text-center">
             <div className="mx-auto h-px w-12 rule-gold" />
             <h2 className="mt-6 font-display text-3xl">{title}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{body}</p>
+            {body ? (
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{body}</p>
+            ) : null}
           </div>
         ))}
       </section>
@@ -157,7 +159,7 @@ function Home() {
           <p className="eyebrow">Featured collections</p>
           <h2 className="mt-3 font-display text-4xl">Three moods, one standard</h2>
         </div>
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="mt-12 grid gap-6 md:grid-cols-2">
           {collections.map((c) => (
             <Link
               key={c.slug}
@@ -187,21 +189,6 @@ function Home() {
 
       {/* New arrivals */}
       <Shelf title="New arrivals" eyebrow="Just landed" items={newArrivals} />
-
-      {/* Promo banner */}
-      <section className="my-20 bg-primary px-5 py-12 sm:py-20 text-center sm:px-8">
-        <p className="text-[0.72rem] uppercase tracking-[0.28em] text-gold">Flash deal</p>
-        <h2 className="mx-auto mt-5 max-w-2xl font-display text-4xl text-primary-foreground sm:text-5xl">
-          20% off the Baddie edit
-        </h2>
-        <Link
-          to="/shop/$collection"
-          params={{ collection: "baddie" }}
-          className="mt-9 inline-block bg-gold px-9 py-4 text-[0.72rem] uppercase tracking-[0.2em] text-gold-foreground"
-        >
-          Shop the drop
-        </Link>
-      </section>
 
       {/* Video rail */}
       <VerticalVideoRail />
