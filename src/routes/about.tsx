@@ -52,14 +52,14 @@ function AboutPage() {
             checked by hand.
           </p>
           <p>
-            Three edits carry the whole idea. Core for the pieces you never take off. Baddie for the
-            nights that deserve noise. Corporate for rooms where the work should speak first.
+            Two edits carry the whole idea. Core for the pieces you never take off. Corporate for
+            rooms where the work should speak first.
           </p>
           <div className="grid grid-cols-3 gap-6 border-t border-border pt-8 text-foreground">
             {[
               ["12mo", "Wear tested"],
               ["1,200+", "Five-star reviews"],
-              ["7 days", "Easy returns"],
+              ["100%", "Made in India"],
             ].map(([n, l]) => (
               <div key={l}>
                 <p className="font-display text-3xl">{n}</p>
