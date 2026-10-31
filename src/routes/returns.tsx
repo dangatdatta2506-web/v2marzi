@@ -31,6 +31,7 @@ function ReturnsPage() {
           heading: "1. Return window",
           body: [
             "You may request a return within 7 days of delivery. The piece must be unused, unworn, and returned in its original packaging with all tags and the invoice.",
+            "An unboxing video of the sealed parcel is mandatory for every return request. Record the entire opening — from the intact outer package to the product — without cuts or edits. Requests without a valid unboxing video cannot be processed, as the video is the only proof the piece arrived damaged or incorrect.",
           ],
         },
         {
@@ -54,7 +55,7 @@ function ReturnsPage() {
         {
           heading: "5. Refunds",
           body: [
-            "Once the returned item passes quality check, refunds are initiated within 3 business days and typically reflect in your original payment method within 5–7 business days. COD orders are refunded to a bank account or UPI ID you share with us.",
+            "Once the returned item passes quality check, refunds are initiated within 3 business days and typically reflect in your original payment method within 5–7 business days. All orders are prepaid, so refunds always go back to the account you paid from.",
           ],
         },
         {
@@ -66,7 +67,8 @@ function ReturnsPage() {
         {
           heading: "7. Cancellations",
           body: [
-            "Orders can be cancelled free of charge any time before dispatch. After dispatch, please use the return process above.",
+            "Orders can be cancelled free of charge any time before dispatch. To receive your refund, share your UPI ID or bank account details on WhatsApp along with your order number, and we will transfer the full amount within 3 business days.",
+            "After dispatch, please use the return process above.",
           ],
         },
       ]}
