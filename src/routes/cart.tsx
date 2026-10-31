@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Gift, Minus, Plus, Truck, X } from "lucide-react";
+import { Gift, Minus, Plus, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { collectionImage } from "@/lib/images";
@@ -38,7 +38,6 @@ declare global {
   }
 }
 
-const FREE_SHIPPING = 1999;
 
 function loadRazorpay(): Promise<boolean> {
   return new Promise((resolve) => {
@@ -64,7 +63,7 @@ function CartPage() {
   const [giftNote, setGiftNote] = useState("");
 
   const discount = coupon ? Math.round((subtotal * coupon.percent) / 100) : 0;
-  const shipping = subtotal === 0 || subtotal > 1999 ? 0 : 149;
+  const shipping = subtotal === 0 ? 0 : 149;
   const taxed = Math.round((subtotal - discount) * 0.03);
   const total = Math.max(0, subtotal - discount) + shipping + taxed;
 
@@ -225,24 +224,6 @@ function CartPage() {
           <aside className="h-fit border border-border bg-card p-8">
             <h2 className="font-display text-3xl">Order summary</h2>
 
-            <div className="mt-6 border border-border bg-background p-4">
-              {subtotal >= FREE_SHIPPING ? (
-                <p className="flex items-center gap-2 text-xs text-gold">
-                  <Truck className="size-4" /> Free shipping unlocked
-                </p>
-              ) : (
-                <p className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <Truck className="size-4 text-gold" /> Add {inr(FREE_SHIPPING - subtotal)} more for
-                  free shipping
-                </p>
-              )}
-              <span className="mt-3 block h-1.5 bg-secondary">
-                <span
-                  className="block h-full bg-gold transition-all"
-                  style={{ width: `${Math.min(100, Math.round((subtotal / FREE_SHIPPING) * 100))}%` }}
-                />
-              </span>
-            </div>
 
 
 
@@ -269,7 +250,7 @@ function CartPage() {
                 id="coupon"
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                placeholder="Coupon code (MARZI10)"
+                placeholder="Coupon code"
                 className="h-11 w-full border border-border bg-background px-3 text-sm outline-none focus:border-gold"
               />
               <button className="h-11 shrink-0 border border-foreground px-4 text-[0.68rem] uppercase tracking-[0.16em]">
@@ -277,26 +258,6 @@ function CartPage() {
               </button>
             </form>
 
-            {(deals ?? []).some((d) => d.code) && (
-              <div className="mt-3 flex flex-wrap gap-2">
-                {(deals ?? [])
-                  .filter((d) => d.code)
-                  .slice(0, 3)
-                  .map((d) => (
-                    <button
-                      key={d.id}
-                      onClick={() => {
-                        setCode(d.code!);
-                        setCoupon({ code: d.code!, percent: d.discountPercent });
-                        toast.success(`Coupon applied — ${d.discountPercent}% off`);
-                      }}
-                      className="border border-dashed border-gold px-3 py-1.5 text-[0.66rem] uppercase tracking-[0.14em] text-gold"
-                    >
-                      {d.code} · {d.discountPercent}% off
-                    </button>
-                  ))}
-              </div>
-            )}
 
             <div className="mt-6 border border-border bg-background p-4">
               <label className="flex cursor-pointer items-center gap-2 text-xs">
