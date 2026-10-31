@@ -1,11 +1,10 @@
-import { Banknote, CreditCard, RefreshCw, ShieldCheck, Truck } from "lucide-react";
-import { inr } from "@/lib/products";
+import { Gem, ShieldCheck, Sparkles, Wallet } from "lucide-react";
 
 const perks = [
-  { icon: ShieldCheck, label: "1-year plating warranty" },
-  { icon: RefreshCw, label: "7-day easy returns" },
-  { icon: Truck, label: "Free shipping over ₹1,999" },
-  { icon: Banknote, label: "Cash on delivery available" },
+  { icon: Wallet, label: "Prepaid orders only" },
+  { icon: Sparkles, label: "Long-lasting 18K plating" },
+  { icon: Gem, label: "Handcrafted in India" },
+  { icon: ShieldCheck, label: "Quality-checked by hand" },
 ];
 
 export function TrustStrip() {
@@ -18,28 +17,5 @@ export function TrustStrip() {
         </li>
       ))}
     </ul>
-  );
-}
-
-export function OffersStrip({ price }: { price: number }) {
-  const emi = Math.round(price / 3);
-  return (
-    <div className="mt-8 border border-border">
-      <p className="border-b border-border px-5 py-3 text-[0.7rem] uppercase tracking-[0.18em]">
-        Offers for you
-      </p>
-      <ul className="space-y-3 px-5 py-4 text-sm text-muted-foreground">
-        <li>
-          <span className="text-foreground">MARZI10</span> — flat 10% off your first order.
-        </li>
-        <li>
-          <span className="text-foreground">Free shipping</span> on orders above ₹1,999.
-        </li>
-        <li className="flex items-center gap-2">
-          <CreditCard className="size-4 shrink-0 text-gold" />
-          Pay in 3 interest-free instalments of {inr(emi)} with UPI or card EMI.
-        </li>
-      </ul>
-    </div>
   );
 }
