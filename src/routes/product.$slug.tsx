@@ -7,7 +7,7 @@ import { ProductCard } from "@/components/product-card";
 import { ProductReviews } from "@/components/product-reviews";
 import { RecentlyViewed } from "@/components/recently-viewed";
 import { InfoAccordion } from "@/components/info-accordion";
-import { OffersStrip, TrustStrip } from "@/components/product-trust";
+import { TrustStrip } from "@/components/product-trust";
 import { pushRecentlyViewed } from "@/lib/recently-viewed";
 import { collectionImage } from "@/lib/images";
 import { getProduct, inr, products, type Product } from "@/lib/products";
@@ -363,10 +363,9 @@ function ProductPage() {
           <DeliveryCheck />
 
           <p className="mt-6 flex items-center gap-2 text-xs text-muted-foreground">
-            <Truck className="size-4" /> Estimated delivery by {delivery} · Free shipping over ₹1,999
+            <Truck className="size-4" /> Estimated delivery by {delivery} · Prepaid orders only
           </p>
 
-          <OffersStrip price={product.price} />
           <TrustStrip />
 
           <InfoAccordion
@@ -377,14 +376,9 @@ function ProductPage() {
                   "Waterproof and sweat-proof — wear it to the gym, the shower and the sea. Wipe with a soft dry cloth after wear and keep away from perfume and harsh cleaners to keep the shine longer.",
               },
               {
-                title: "Warranty",
+                title: "Returns",
                 content:
-                  "Covered by a 1-year plating warranty against tarnishing and discolouration under normal wear. Reach out on WhatsApp with your order ID and we'll sort a replacement.",
-              },
-              {
-                title: "Shipping & returns",
-                content:
-                  "Dispatched within 24 hours on working days. Free shipping on orders above ₹1,999, cash on delivery available on eligible PIN codes, and 7-day easy returns on unworn pieces in original packaging.",
+                  "Unworn pieces in original packaging can be returned within 7 days of delivery. An unboxing video of the sealed parcel is mandatory for every return request.",
               },
               {
                 title: "Size guide",

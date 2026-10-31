@@ -18,7 +18,6 @@ const buckets: Bucket[] = [
 
 const occasions = [
   { title: "For her first job", blurb: "Boardroom-ready polish that survives long days.", collection: "corporate" },
-  { title: "For the birthday girl", blurb: "Statement pieces with a little noise.", collection: "baddie" },
   { title: "For everyday love", blurb: "Quiet classics she'll never take off.", collection: "core" },
 ] as const;
 
@@ -40,7 +39,7 @@ export const Route = createFileRoute("/gifting")({
       {
         name: "description",
         content:
-          "Marzi gifting: Raksha Bandhan picks, corporate and bulk gifting, plus edits under ₹2,000 and ₹4,000. Long-lasting gold, gift-boxed, free shipping over ₹1,999.",
+          "Marzi gifting: Raksha Bandhan picks, corporate and bulk gifting, plus edits under ₹2,000 and ₹4,000. Long-lasting gold, gift-boxed.",
       },
       { property: "og:title", content: "Gifting — Rakhi, Corporate & Budget Jewelry Gifts | Marzi" },
       {

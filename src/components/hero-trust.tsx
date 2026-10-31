@@ -1,21 +1,21 @@
-import { CreditCard, MessageCircle, RefreshCw, ShieldCheck } from "lucide-react";
+import { Gem, MessageCircle, Sparkles, Wallet } from "lucide-react";
 import { whatsappLink } from "./whatsapp-button";
 
 const signals = [
   {
-    icon: CreditCard,
+    icon: Wallet,
     label: "Payments",
-    sub: "UPI · Visa/Mastercard · Razorpay · COD",
+    sub: "UPI · Visa/Mastercard · Razorpay",
   },
   {
-    icon: ShieldCheck,
-    label: "Warranty",
-    sub: "1-year plating warranty",
+    icon: Sparkles,
+    label: "Long-lasting",
+    sub: "Triple-layer 18K plating",
   },
   {
-    icon: RefreshCw,
-    label: "Returns",
-    sub: "7-day easy returns",
+    icon: Gem,
+    label: "Made in India",
+    sub: "Handcrafted by artisans",
   },
   {
     icon: MessageCircle,

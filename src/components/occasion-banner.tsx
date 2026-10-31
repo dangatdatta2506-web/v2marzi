@@ -43,7 +43,7 @@ export const OCCASION: PromoConfig = {
   showCountdown: true,
   countdownFromDays: 30,
   maxPrice: 3000,
-  collections: ["core", "baddie"],
+  collections: ["core"],
 };
 
 export function occasionSearch(config: PromoConfig = OCCASION) {

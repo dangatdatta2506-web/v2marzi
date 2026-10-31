@@ -33,12 +33,6 @@ export const collections: {
     blurb: "The quiet pieces you never take off — clean lines, long-lasting gold.",
   },
   {
-    slug: "baddie",
-    title: "Baddie",
-    tagline: "Statement energy",
-    blurb: "Bold silhouettes for the nights that deserve a little noise.",
-  },
-  {
     slug: "corporate",
     title: "Corporate",
     tagline: "Boardroom polish",

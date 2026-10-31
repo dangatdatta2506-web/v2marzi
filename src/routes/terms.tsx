@@ -8,7 +8,7 @@ export const Route = createFileRoute("/terms")({
       {
         name: "description",
         content:
-          "The terms that govern your use of the Marzi online store, orders, pricing, and warranty in India.",
+          "The terms that govern your use of the Marzi online store, orders, and pricing in India.",
       },
       { property: "og:title", content: "Terms of Service — Marzi Jewelry" },
       { property: "og:description", content: "Terms governing purchases from Marzi." },
@@ -49,7 +49,7 @@ function TermsPage() {
         {
           heading: "4. Orders and payment",
           body: [
-            "An order is confirmed only after payment is authorised, or after COD verification where offered. We reserve the right to refuse or cancel any order for suspected fraud, incorrect pricing, or unserviceable delivery locations.",
+            "All orders are prepaid and confirmed only after payment is authorised through our secure checkout — UPI, debit and credit cards, net banking or wallets. We do not offer cash on delivery. We reserve the right to refuse or cancel any order for suspected fraud, incorrect pricing, or unserviceable delivery locations.",
           ],
         },
         {
@@ -59,19 +59,13 @@ function TermsPage() {
           ],
         },
         {
-          heading: "6. Warranty",
-          body: [
-            "Marzi jewelry carries a 1-year plating warranty against manufacturing defects. The warranty excludes damage from misuse, chemical exposure, accidental impact, or normal wear and tear.",
-          ],
-        },
-        {
-          heading: "7. Intellectual property",
+          heading: "6. Intellectual property",
           body: [
             "All content on this store — designs, photographs, text, and the MARZI name and logo — is owned by us and may not be copied or reused without written permission.",
           ],
         },
         {
-          heading: "8. Limitation of liability",
+          heading: "7. Limitation of liability",
           body: [
             "To the extent permitted by law, our total liability for any claim relating to an order is limited to the amount you paid for that order.",
           ],
